@@ -2,16 +2,24 @@ using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
-    public Transform target; // Refer�ncia ao personagem
-    public float distance = 13f; // Dist�ncia fixa da c�mera
-    public float sensitivity = 3f; // Sensibilidade do mouse
-    public float minYAngle = -10f, maxYAngle = 60f; // Limites verticais da c�mera
+    [SerializeField] private Transform target;
+    [SerializeField] private float distance = 13f;
+    [SerializeField] private float sensitivity = 3f;
+    [SerializeField] private float minYAngle = -10f, maxYAngle = 60f;
 
-    private float rotationX = 0f;
-    private float rotationY = 0f;
-    private bool followFloating = true; // Controle para seguir ou n�o a subida e descida
+    private float rotationX;
+    private float rotationY;
+    private bool followFloating = true;
+    
+    // Cache de componentes e variáveis para reduzir alocação de memória
+    private Vector3 correctedTargetPos;
+    private Vector3 desiredCameraPos;
+    private Vector3 direction;
+    private Quaternion rotation;
+    private RaycastHit hit;
+    private readonly Vector3 offsetVector = new Vector3(0, 0, -1); // Vector3 constante para evitar alocação
 
-    void Start()
+    private void Start()
     {
         if (target != null)
         {
@@ -20,47 +28,50 @@ public class CameraScript : MonoBehaviour
             rotationY = angles.x;
         }
 
+        // Configuração do cursor apenas uma vez no início
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        if (target != null)
+        if (target == null) return; // Retorno rápido se não houver target
+
+        // Verifica input apenas quando necessário
+        if (Input.GetKeyDown(KeyCode.Return))
         {
-            // Alterna o estado de seguir a subida e descida ao pressionar Enter
-            if (Input.GetKeyDown(KeyCode.Return))
-            {
-                followFloating = !followFloating;
-            }
-
-            rotationX += Input.GetAxis("Mouse X") * sensitivity;
-            rotationY -= Input.GetAxis("Mouse Y") * sensitivity;
-            rotationY = Mathf.Clamp(rotationY, minYAngle, maxYAngle);
-
-            Quaternion rotation = Quaternion.Euler(rotationY, rotationX, 0);
-
-            // Corrige o valor de Y com base na escolha do usu�rio
-            float floatOffset = Mathf.Sin(Time.time * 2f) * 0.5f;
-            float adjustedY = followFloating ? target.position.y : target.position.y - floatOffset;
-
-            Vector3 correctedTargetPos = new Vector3(target.position.x, adjustedY, target.position.z);
-            Vector3 desiredCameraPos = correctedTargetPos + rotation * new Vector3(0, 0, -distance);
-            Vector3 direction = (desiredCameraPos - correctedTargetPos).normalized;
-            float maxDistance = distance;
-
-            // Raycast para detectar colis�es
-            RaycastHit hit;
-            if (Physics.Raycast(correctedTargetPos, direction, out hit, maxDistance))
-            {
-                transform.position = hit.point - direction * 0.5f; // Pequeno recuo para evitar atravessar
-            }
-            else
-            {
-                transform.position = desiredCameraPos;
-            }
-
-            transform.LookAt(correctedTargetPos);
+            followFloating = !followFloating;
         }
+
+        // Calcula rotação
+        rotationX += Input.GetAxis("Mouse X") * sensitivity;
+        rotationY = Mathf.Clamp(rotationY - Input.GetAxis("Mouse Y") * sensitivity, minYAngle, maxYAngle);
+        
+        rotation = Quaternion.Euler(rotationY, rotationX, 0);
+
+        // Otimização do cálculo de flutuação
+        float adjustedY = target.position.y;
+        if (!followFloating)
+        {
+            adjustedY -= Mathf.Sin(Time.time * 2f) * 0.5f;
+        }
+
+        // Reutiliza vetores para reduzir garbage collection
+        correctedTargetPos.Set(target.position.x, adjustedY, target.position.z);
+        desiredCameraPos = correctedTargetPos + rotation * (offsetVector * distance);
+        direction = (desiredCameraPos - correctedTargetPos).normalized;
+
+        // Otimização do Raycast com layer mask se necessário
+        // Physics.Raycast(correctedTargetPos, direction, out hit, distance, layerMask);
+        if (Physics.Raycast(correctedTargetPos, direction, out hit, distance))
+        {
+            transform.position = hit.point - direction * 0.5f;
+        }
+        else
+        {
+            transform.position = desiredCameraPos;
+        }
+
+        transform.LookAt(correctedTargetPos);
     }
 }
