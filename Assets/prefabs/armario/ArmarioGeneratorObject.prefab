@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1144955469018335486
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3515285766566047222}
+  - component: {fileID: 4233751840646630400}
+  m_Layer: 0
+  m_Name: ArmarioGeneratorObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3515285766566047222
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144955469018335486}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4233751840646630400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144955469018335486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 441b4553758c37948bee0ad86a7c5926, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deslocamentoEstrutura: {x: -1, y: 0, z: 0}
+  moduloP: {fileID: 7109584586912277429, guid: 93308e13fcf29df48a12c7108801c1d7, type: 3}
+  moduloC: {fileID: 6995847827862928955, guid: 46898b4af983d454a98d11d0a9092f7a, type: 3}
+  moduloG: {fileID: 95767112632611449, guid: a01811932078ece44b393b5552c4dabe, type: 3}
+  metalMaterial: {fileID: 2100000, guid: 897bbcebd8c573144a5117e7992e8a87, type: 2}
+  vidroMaterial: {fileID: 2100000, guid: df3e4629d3e0cb54c81bb48122b47bce, type: 2}
+  xmlArmarios: {fileID: 4900000, guid: b98c10c4be5ee8b4fab86782e10f564f, type: 3}
+  armarioSpaces:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  moduleSpacing: 2
+  internalDepth: 2.5
+  maxColunas: 8
+  maxLinhas: 5
+  baseThickness: 0.25
+  ceilingThickness: 0.25
+  wallThickness: 0.25
+  backThickness: 0.1
+  doorThickness: 0.05
+  postePrefab: {fileID: 4683594238681294168, guid: 59adfd46d072d3044b127894db50a626, type: 3}
+  posteDistance: -15
+  player: {fileID: 0}
+  doorInteractionRadius: 15
+  doorGlowColor: {r: 0, g: 1, b: 0, a: 0.2627451}
+  doorGlowIntensity: 0.01
+  doorSlideSpeed: 2

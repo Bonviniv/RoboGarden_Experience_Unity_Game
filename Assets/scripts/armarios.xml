@@ -1,0 +1,23 @@
+<armarios>
+  <armario id="1" col="4" lin="3">
+    <linha><P/><C/><G/><P/></linha>
+    <linha><C/><C/><P/><G/></linha>
+    <linha><G/><G/><C/><P/></linha>
+  </armario>
+
+  <armario id="2" col="3" lin="2">
+    <linha><P/><P/><G/></linha>
+    <linha><C/><C/><C/></linha>
+  </armario>
+
+  <armario id="3" col="5" lin="4">
+    <linha><G/><G/><G/><G/><G/></linha>
+    <linha><P/><C/><P/><C/><P/></linha>
+    <linha><P/><P/><P/><P/><P/></linha>
+    <linha><C/><G/><C/><G/><C/></linha>
+  </armario>
+
+  <armario id="4" col="2" lin="1">
+    <linha><P/><C/></linha>
+  </armario>
+</armarios>
