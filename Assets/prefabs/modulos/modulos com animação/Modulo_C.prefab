@@ -110,7 +110,7 @@ Transform:
   m_GameObject: {fileID: 4621719931100701974}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -1, z: -0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.318, y: 0.587, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -287,6 +287,7 @@ GameObject:
   - component: {fileID: 2992432990069705212}
   - component: {fileID: 2489518531293228240}
   - component: {fileID: 1470281335214852684}
+  - component: {fileID: 7774741932253556795}
   m_Layer: 0
   m_Name: prateleira
   m_TagString: Untagged
@@ -362,6 +363,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &7774741932253556795
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4758468617570721309}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.021295663, y: 0.02, z: 0.02}
+  m_Center: {x: -0.0006478317, y: 0, z: 0}
 --- !u!1 &5988645231456679638
 GameObject:
   m_ObjectHideFlags: 0

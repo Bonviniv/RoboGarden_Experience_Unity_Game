@@ -550,8 +550,8 @@ BoxCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.010199999, y: 0.010199998, z: 0.016096523}
-  m_Center: {x: 0, y: 0.000000014901161, z: -0.006771847}
+  m_Size: {x: 0.0058829896, y: 0.0059748497, z: 0.016096523}
+  m_Center: {x: -0.000020044683, y: -0.00036486727, z: -0.00677185}
 --- !u!1 &203570643535714102
 GameObject:
   m_ObjectHideFlags: 0
@@ -1223,8 +1223,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -38.732, y: 3.2650423, z: -4.63}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2858524671351186283}
   - {fileID: 8441278249133919737}
@@ -2177,8 +2177,8 @@ BoxCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.010199999, y: 0.010199998, z: 0.016096523}
-  m_Center: {x: 0, y: 0.000000014901161, z: -0.006771847}
+  m_Size: {x: 0.0055408496, y: 0.0070738397, z: 0.016096523}
+  m_Center: {x: 0.00013835843, y: -0.000058121877, z: -0.00677185}
 --- !u!23 &1043275349344274676
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -7988,6 +7988,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6912222196794238787}
+  - component: {fileID: 6912222196794238788}
   m_Layer: 0
   m_Name: vaso com planta Ncarn prefab
   m_TagString: vaso
@@ -8095,10 +8096,10 @@ CapsuleCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.020848433
-  m_Height: 0.06300035
+  m_Radius: 0.016492046
+  m_Height: 0.063000344
   m_Direction: 2
-  m_Center: {x: -0.0020000003, y: 0.00055027247, z: 0.013269753}
+  m_Center: {x: 0.002356386, y: 0.00055027247, z: 0.013269753}
 --- !u!23 &3810139842731963087
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -13563,7 +13564,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9218139805065910398}
   serializedVersion: 4
-  m_Mass: 0.0000001
+  m_Mass: 10000
   m_Drag: 10
   m_AngularDrag: 10
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -14435,13 +14436,40 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -38.661995, y: 3.2650428, z: -1.5100002}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6726476555478582359}
   - {fileID: 2258091695355854657}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &6912222196794238788
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3769601274469802067}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!23 &6928447202459503464
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -17531,6 +17559,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 548784310310679239}
+  - component: {fileID: 8344946415666921386}
   m_Layer: 0
   m_Name: vaso com planta carn prefab
   m_TagString: vaso
@@ -17538,6 +17567,33 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!54 &8344946415666921386
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8344946415666921385}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!4 &8346037309078754730
 Transform:
   m_ObjectHideFlags: 0
@@ -17805,7 +17861,7 @@ Transform:
   m_GameObject: {fileID: 1073650320711284106}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.14780942, z: 0, w: 0.9890159}
-  m_LocalPosition: {x: -1.859, y: 0.064, z: 0.16}
+  m_LocalPosition: {x: -2.009, y: 0.412, z: 0.206}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []

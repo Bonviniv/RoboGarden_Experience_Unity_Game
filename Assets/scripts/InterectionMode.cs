@@ -146,17 +146,43 @@ public class InterectionMode : MonoBehaviour
                 {
                     if (moduleTransform.name.Contains("Modulo_C") || moduleTransform.name.Contains("Modulo_G")|| moduleTransform.name.Contains("Modulo_P"))
                     {
-                      
+                        Transform moduleSpaceForPlant = moduleTransform.Find("planta Space");
+                        
+                        
+                            if (moduleSpaceForPlant != null && moduleSpaceForPlant.CompareTag("plantaSpace"))
+                            {
+                                foreach (Transform child in moduleSpaceForPlant)
+                                {
+                                   if (child.gameObject.CompareTag("vaso"))
+{
+    // Get current vaso position and camera position
+    Vector3 currentVasoPos = child.position;
+    Vector3 cameraPos = camera.transform.position;
+    
+    // Calculate drop position between vaso and camera
+    Vector3 dropPosition = (currentVasoPos + cameraPos) / 2f;
+    dropPosition.y = 5f; // Slight offset from ground
+    
+    
+
+    // Drop the plant
+    child.SetParent(null);
+    child.position = dropPosition;
+    child.rotation = Quaternion.identity;
+    Debug.Log("Plant dropped between current position and camera");
+}
+                                }
+                            }
+                        
+                        
                         // Check if player is carrying a plant
                         if (playerController.currentPlanta != null)
                         {
-                            // Find the planta space in the module
-                            Transform plantaSpace = moduleTransform.Find("planta Space");
-                            if (plantaSpace != null && plantaSpace.CompareTag("plantaSpace"))
+                            if (moduleSpaceForPlant != null && moduleSpaceForPlant.CompareTag("plantaSpace"))
                             {
                                 // Check if module already has a plant
                                 bool hasPlant = false;
-                                foreach (Transform child in plantaSpace)
+                                foreach (Transform child in moduleSpaceForPlant)
                                 {
                                     if (child.gameObject.CompareTag("vaso"))
                                     {
@@ -167,8 +193,14 @@ public class InterectionMode : MonoBehaviour
 
                                 if (!hasPlant)
                                 {
+                                     Rigidbody rb =  playerController.currentPlanta.GetComponent<Rigidbody>();
+                                     if (rb != null)
+                                       {
+                                        rb.isKinematic = false;
+                                        rb.useGravity = true;
+                                       }
                                     // Place the plant
-                                    playerController.currentPlanta.transform.SetParent(plantaSpace);
+                                    playerController.currentPlanta.transform.SetParent(moduleSpaceForPlant);
                                     playerController.currentPlanta.transform.localPosition = Vector3.zero;
                                     playerController.currentPlanta.transform.localRotation = Quaternion.identity;
                                     
@@ -183,7 +215,6 @@ public class InterectionMode : MonoBehaviour
                                 }
                             }
                         }
-
                         // Handle regular module interaction
                         Animator animator = moduleTransform.GetComponent<Animator>();
                         if (animator != null)

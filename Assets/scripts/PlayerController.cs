@@ -129,7 +129,7 @@ public class PlayerController : MonoBehaviour
         MoveArms();
 
         HandlePickDrop(groundHeight);
-        MoveArms();
+       
         CheckWaitingAnimation(); // Add this line
     }
 
@@ -139,18 +139,30 @@ public class PlayerController : MonoBehaviour
     {
         if (animator != null)
         {
-            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+ AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+if(currentPlanta){
+            Debug.Log( currentPlanta.name);
+            if(!stateInfo.IsName("waiting") ){
+             animator.SetTrigger("pick");
+
+            }
+
+}else{
             if (stateInfo.IsName("waiting") )
             {
-                if ( !currentPlanta)
-                {
+                
+                    carrying=false;
 
                     Debug.Log(" currentPlanta == null");
                     animator.SetTrigger("drop");
-                    carrying = false;
+                    
                     Debug.Log("Drop triggered from waiting state");
-                }
+                
             }
+}
+
+           
         }
     }
 
@@ -327,6 +339,14 @@ public class PlayerController : MonoBehaviour
             {
                 animator.SetTrigger("pick");
 
+                // Disable Rigidbody when picking up
+                Rigidbody rb = currentVaso.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true;
+                    rb.useGravity = false;
+                }
+
                 // Coloca o vaso como filho do ponto de carregamento
                 currentVaso.transform.SetParent(vaso_space);
                 currentVaso.transform.localPosition = Vector3.zero;
@@ -335,17 +355,22 @@ public class PlayerController : MonoBehaviour
                 Debug.Log("Trigger 'pick' ativado. carrying = true");
                 currentPlanta = currentVaso;
             }
-            // Soltar vaso
-        
-
-          
         }
+        
         if (Input.GetKeyDown(KeyCode.M))
         {
-
-         if (carrying && currentPlanta != null )
+            if (carrying && currentPlanta != null)
             {
                 animator.SetTrigger("drop");
+
+                // Enable Rigidbody when dropping
+                Rigidbody rb = currentPlanta.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = false;
+                    rb.useGravity = true;
+
+                }
 
                 // Solta o vaso no chão, próximo do jogador
                 currentPlanta.transform.SetParent(null);
