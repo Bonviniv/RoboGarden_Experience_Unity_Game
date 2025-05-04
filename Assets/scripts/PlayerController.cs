@@ -19,13 +19,34 @@ public class PlayerController : MonoBehaviour
     public float heightOffset = 3.11f;
 
     [SerializeField] private Transform armacaoMarvin; // Referência à parte giratória do personagem
-    [SerializeField] private Animator animator;        // Referência ao componente Animator
-    [SerializeField] private Transform vaso_space;     // Local onde o vaso será posicionado quando carregado
+    public Animator animator;        // Referência ao componente Animator
+    public Transform vaso_space;     // Local onde o vaso será posicionado quando carregado
+    [SerializeField] private Transform leftShoulder;
+    [SerializeField] private Transform rightShoulder;
+
+    private Quaternion leftShoulderOriginal;
+    private Quaternion rightShoulderOriginal;
+     // Move os ombros do jogador com base nas teclas de seta.
+    // Add these at the top with other private variables
+    private Quaternion leftTargetRotation;
+    private Quaternion rightTargetRotation;
+    public float armRotationSpeed = 5f; // New variable for arm rotation speed
+
+    // Add these with other private variables at the top
+    private bool isIdleAnimationPlaying = true;
+
+
+    private bool isLeftArmRaised = false;
+    private bool isRightArmRaised = false;
 
     public bool canPick = false;   // Define se o jogador pode pegar um vaso
     public bool carrying = false;  // Define se o jogador está carregando um vaso
 
-    private GameObject currentVaso = null; // Vaso mais próximo atualmente selecionado
+    public GameObject currentVaso = null; // Vaso mais próximo atualmente selecionado
+
+    public GameObject currentPlanta = null; // Planta que esta carregando
+     public bool wannaDrop=false;
+
     private Vector3 startPosition;         // Posição inicial do jogador
     private Transform cameraTransform;     // Referência à câmera principal
 
@@ -43,14 +64,45 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
+        //salva a rotação original dos ombros
+        if (leftShoulder) 
+        {
+            leftShoulderOriginal = new Quaternion(-0.415918887f, 0.538022041f, -0.356777161f, 0.640510619f);
+            leftTargetRotation = leftShoulderOriginal;
+            leftShoulder.rotation = leftShoulderOriginal;
+        }
+        if (rightShoulder) 
+        {
+            rightShoulderOriginal = new Quaternion(0.487318575f, -0.0388078243f, 0.0576581918f, 0.870454013f);
+            rightTargetRotation = rightShoulderOriginal;
+            rightShoulder.rotation = rightShoulderOriginal;
+        }
+
         // Preenche a lista de vasos na cena no início
         UpdateVasosCache();
     }
 
+    // Add this new method after HandlePickDrop
     void Update()
     {
         // Lida com movimentação do jogador
         HandleMovement();
+
+        // Check if plant/vaso was removed and trigger drop animation
+        if (carrying && currentPlanta == null && currentVaso == null)
+        {
+            animator.SetTrigger("drop");
+            carrying = false;
+            Debug.Log("Auto-triggered drop animation after plant placement");
+        }
+
+          if (carrying && currentPlanta == null)
+        {
+            animator.SetTrigger("drop");
+            carrying = false;
+            Debug.Log("Auto-triggered drop animation after plant placement");
+        }
+
 
         // Calcula altura do terreno sob o jogador
         float groundHeight = Terrain.activeTerrain.SampleHeight(transform.position);
@@ -73,6 +125,98 @@ public class PlayerController : MonoBehaviour
 
         // Lida com a ação de pegar ou soltar vaso
         HandlePickDrop(groundHeight);
+
+        MoveArms();
+
+        HandlePickDrop(groundHeight);
+        MoveArms();
+        CheckWaitingAnimation(); // Add this line
+    }
+
+
+     // Add this function after MoveArms()
+    void CheckWaitingAnimation()
+    {
+        if (animator != null)
+        {
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.IsName("waiting") )
+            {
+                if ( !currentPlanta)
+                {
+
+                    Debug.Log(" currentPlanta == null");
+                    animator.SetTrigger("drop");
+                    carrying = false;
+                    Debug.Log("Drop triggered from waiting state");
+                }
+            }
+        }
+    }
+
+   
+    void MoveArms()
+    {
+        // Left arm control
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Debug.Log("pressed L");
+            if (!isLeftArmRaised)
+            {
+                animator.enabled = false;  // Disable animator when raising arm
+                isIdleAnimationPlaying = false;
+                leftTargetRotation = new Quaternion(-0.579968095f, 0.710711062f, 0.182253078f, 0.353992581f);
+                isLeftArmRaised = true;
+            }
+            else
+            {
+                leftTargetRotation = leftShoulderOriginal;
+                isLeftArmRaised = false;
+                
+                // Only re-enable animator if both arms are down
+                if (!isRightArmRaised)
+                {
+                    animator.enabled = true;
+                    isIdleAnimationPlaying = true;
+                }
+            }
+        }
+
+        // Right arm control
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Debug.Log("pressed R");
+            if (!isRightArmRaised)
+            {
+                animator.enabled = false;  // Disable animator when raising arm
+                isIdleAnimationPlaying = false;
+                rightTargetRotation = new Quaternion(0.372511625f, -0.319608629f, 0.535428941f, 0.687314689f);
+                isRightArmRaised = true;
+            }
+            else
+            {
+                rightTargetRotation = rightShoulderOriginal;
+                isRightArmRaised = false;
+                
+                // Only re-enable animator if both arms are down
+                if (!isLeftArmRaised)
+                {
+                    animator.enabled = true;
+                    isIdleAnimationPlaying = true;
+                }
+            }
+        }
+
+        // Apply smooth rotation every frame
+        if (leftShoulder != null && !isIdleAnimationPlaying)
+        {
+            leftShoulder.localRotation = Quaternion.Slerp(leftShoulder.localRotation, leftTargetRotation, armRotationSpeed * Time.deltaTime);
+        }
+        
+        if (rightShoulder != null && !isIdleAnimationPlaying)
+        {
+            rightShoulder.localRotation = Quaternion.Slerp(rightShoulder.localRotation, rightTargetRotation, armRotationSpeed * Time.deltaTime);
+        }
     }
 
 
@@ -112,7 +256,7 @@ public class PlayerController : MonoBehaviour
 
 
     /// Atualiza a lista de vasos na cena com a tag "vaso".
-    void UpdateVasosCache()
+    public void UpdateVasosCache()
     {
         vasosInScene.Clear();
         vasosInScene.AddRange(GameObject.FindGameObjectsWithTag("vaso"));
@@ -189,27 +333,38 @@ public class PlayerController : MonoBehaviour
 
                 carrying = true;
                 Debug.Log("Trigger 'pick' ativado. carrying = true");
+                currentPlanta = currentVaso;
             }
             // Soltar vaso
-            else if (carrying && currentVaso != null)
+        
+
+          
+        }
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+
+         if (carrying && currentPlanta != null )
             {
                 animator.SetTrigger("drop");
 
                 // Solta o vaso no chão, próximo do jogador
-                currentVaso.transform.SetParent(null);
-                currentVaso.transform.position = new Vector3(transform.position.x, groundHeight + 0.05f, transform.position.z);
+                currentPlanta.transform.SetParent(null);
+                currentPlanta.transform.position = new Vector3(transform.position.x, groundHeight + 0.05f, transform.position.z);
 
                 carrying = false;
                 Debug.Log("Trigger 'drop' ativado. carrying = false");
+                currentPlanta = null;
+                currentVaso = null;
             }
         }
     }
+    
 
    
     /// Permite ao jogador interagir com postes de luz. Pressionar 'P' alterna a luz ligada/desligada.
     void HandlePosteInteraction()
     { 
-        if (Input.GetKeyDown(KeyCode.P))
+       if (Input.GetMouseButtonDown(0)) 
                 {
         GameObject[] postes = GameObject.FindGameObjectsWithTag("poste");
 

@@ -9,6 +9,9 @@ TagManager:
   - poste
   - luzPoste
   - armarioSpace
+  - TrackingObject
+  - Actors
+  - modulo
   layers:
   - Default
   - TransparentFX

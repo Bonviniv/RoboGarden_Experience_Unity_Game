@@ -203,7 +203,7 @@ public class ArmarioGenerator : MonoBehaviour
             lastGlowingDoor = nearestDoor;
 
             // Check for door slide input
-            if (Input.GetKeyDown(KeyCode.L))
+            if (Input.GetKeyDown(KeyCode.P))
             {
                 SlideDoor(nearestDoor);
             }
@@ -296,6 +296,11 @@ public class ArmarioGenerator : MonoBehaviour
     {
         // Rotaciona Modulo_G em 90 graus no eixo Y
         if (modulo.name.StartsWith("Modulo_G"))
+        {
+            modulo.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+        }
+        // Rotaciona Modulo_C em 180 graus no eixo Y
+        else if (modulo.name.StartsWith("Modulo_C"))
         {
             modulo.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
         }
