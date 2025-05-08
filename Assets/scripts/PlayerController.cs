@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     public float heightOffset = 3.11f;
 
     [SerializeField] private Transform armacaoMarvin; // Referência à parte giratória do personagem
+    
     public Animator animator;        // Referência ao componente Animator
     public Transform vaso_space;     // Local onde o vaso será posicionado quando carregado
     [SerializeField] private Transform leftShoulder;
@@ -54,6 +55,14 @@ public class PlayerController : MonoBehaviour
                                                                  
     private Dictionary<Light, (Color, float)> posteOriginalSettings = new Dictionary<Light, (Color, float)>(); // Guarda a intensidade e cor original das luzes dos postes
 
+
+    public AudioClip pickSound;     // Sound to play when picking up objects
+    public float volumePickSound = 1f;   // Volume for the pick sound (0.0f to 1.0f)
+
+    public AudioClip posteSound;     
+    public float volumePosteSound = 1f;  
+
+  
 
     void Start()
     {
@@ -163,6 +172,23 @@ if(currentPlanta){
 }
 
            
+        }
+    }
+
+
+    void PlayPickSound()
+    {
+        if (pickSound != null)
+        {
+            AudioSource.PlayClipAtPoint(pickSound, Camera.main.transform.position, volumePickSound);
+        }
+    }
+
+    void PlayPosteSound()
+    {
+        if (posteSound != null)
+        {
+            AudioSource.PlayClipAtPoint(posteSound, Camera.main.transform.position, volumePosteSound);
         }
     }
 
@@ -337,6 +363,7 @@ if(currentPlanta){
             // Pegar vaso
             if (canPick && !carrying && currentVaso != null)
             {
+                PlayPickSound();
                 animator.SetTrigger("pick");
 
                 // Disable Rigidbody when picking up
@@ -415,10 +442,12 @@ if(currentPlanta){
                                     if (!posteOriginalSettings.ContainsKey(luz))
                                     {
                                         posteOriginalSettings[luz] = (luz.color, luz.intensity);
+                                        //PlayPosteSound();
                                     }
 
                                     // Apaga a luz
                                     luz.enabled = false;
+                                    PlayPosteSound();
                                 }
                                 else
                                 {
@@ -427,8 +456,10 @@ if(currentPlanta){
                                     {
                                         luz.color = settings.Item1;
                                         luz.intensity = settings.Item2;
+                                        //PlayPosteSound();
                                     }
 
+                                    PlayPosteSound();
                                     luz.enabled = true;
                                 }
                             }

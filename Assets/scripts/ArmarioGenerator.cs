@@ -57,6 +57,15 @@ public class ArmarioGenerator : MonoBehaviour
     // Add debug property
     private bool debugDoors = true;
 
+    public AudioClip openDoorSound;     
+    public float volumeOpenDoorSound = 1f;   
+
+    public AudioClip closeDoorSound;     
+    public float volumeCloseDoorSound = 1f; 
+
+
+    
+
     private void Start()
     {
         if (xmlArmarios == null)
@@ -205,10 +214,30 @@ public class ArmarioGenerator : MonoBehaviour
             // Check for door slide input
             if (Input.GetKeyDown(KeyCode.P))
             {
+                
                 SlideDoor(nearestDoor);
             }
         }
     }
+
+     
+
+     void PlayCloseDoorSound()
+    {
+        if (closeDoorSound!= null)
+        {
+            AudioSource.PlayClipAtPoint(closeDoorSound, Camera.main.transform.position, volumeCloseDoorSound);
+        }
+    }
+
+    void PlayOpenDoorSound()
+    {
+        if (openDoorSound != null)
+        {
+            AudioSource.PlayClipAtPoint(openDoorSound, Camera.main.transform.position, volumeOpenDoorSound);
+        }
+    }
+
 
     private void SetDoorEmission(GameObject door, bool enableEmission)
     {
@@ -249,11 +278,14 @@ public class ArmarioGenerator : MonoBehaviour
                 {
                     targetPos = door.transform.localPosition + Vector3.right * doorWidth;
                 }
+                // Play open door sound
+                PlayOpenDoorSound();
             }
             else
             {
                 // Return to original position
                 targetPos = doorOriginalPositions[door.name].position;
+                 PlayCloseDoorSound();
             }
 
             StartCoroutine(SlideDoorCoroutine(door, targetPos));

@@ -6,6 +6,7 @@ public class InterectionMode : MonoBehaviour
 {
     public GameObject playerModel;
     public GameObject camera;
+    public GameObject characterCollider; 
     private PlayerController playerController;
     private CameraScript cameraScript;
     private List<GameObject> interactionAreas = new List<GameObject>();
@@ -21,6 +22,15 @@ public class InterectionMode : MonoBehaviour
     private GameObject currentModulo;
     private bool isModuloOpen = false;
 
+    public AudioClip interactionModeSound;     
+    public float volumeInteractionModeSound = 1f;   
+
+    public AudioClip openAndCloseGavetaSound;     
+    public float volumeOpenAndCloseGavetaSound = 1f; 
+
+    public AudioClip openAndCloseCubiculoSound;     
+    public float volumeOpenAndCloseCubiculoSound = 1f; 
+
     void Start()
     {
         // Get components
@@ -29,6 +39,19 @@ public class InterectionMode : MonoBehaviour
         
         // Delay the creation of interaction areas
         Invoke("CreateInteractionAreas", 1f);
+    }
+
+    public void ToggleCharacterCollider()
+    {
+        if (characterCollider != null)
+        {
+            CapsuleCollider capsuleCollider = characterCollider.GetComponent<CapsuleCollider>();
+            if (capsuleCollider != null)
+            {
+                capsuleCollider.enabled = !capsuleCollider.enabled;
+                Debug.Log($"Character collider is now {(capsuleCollider.enabled ? "enabled" : "disabled")}");
+            }
+        }
     }
 
     void RotateInteractionArea(GameObject interactionArea, Vector3 postePos, Vector3 armarioPos)
@@ -42,6 +65,31 @@ public class InterectionMode : MonoBehaviour
         // Apply rotation
         interactionArea.transform.rotation = targetRotation;
     }
+
+      void PlayInterectionModeSound()
+    {
+        if (interactionModeSound != null)
+        {
+            AudioSource.PlayClipAtPoint(interactionModeSound, Camera.main.transform.position, volumeInteractionModeSound);
+        }
+    }
+
+        void PlayCubiculoSound()
+    {
+        if (openAndCloseCubiculoSound != null)
+        {
+            AudioSource.PlayClipAtPoint(openAndCloseCubiculoSound, Camera.main.transform.position, volumeOpenAndCloseCubiculoSound);
+        }
+    }
+
+       void PlayGavetaSound()
+    {
+        if (openAndCloseGavetaSound != null)
+        {
+            AudioSource.PlayClipAtPoint(openAndCloseGavetaSound, Camera.main.transform.position, volumeOpenAndCloseGavetaSound);
+        }
+    }
+
 
     void CreateInteractionAreas()
     {
@@ -221,18 +269,33 @@ public class InterectionMode : MonoBehaviour
                         {
                             if (currentModulo != moduleTransform.gameObject)
                             {
+                                 
                                 currentModulo = moduleTransform.gameObject;
+                                
+
                                 isModuloOpen = false;
                             }
 
                             if (!isModuloOpen)
                             {
                                 Debug.Log("Opening module: " + moduleTransform.name);
+                                if(moduleTransform.name.Contains("Modulo_C")){
+                                    PlayCubiculoSound();
+                                }
+                                if(moduleTransform.name.Contains("Modulo_G")){
+                                    PlayGavetaSound();
+                                }
                                 animator.SetTrigger("open");
                                 isModuloOpen = true;
                             }
                             else
                             {
+                                if(moduleTransform.name.Contains("Modulo_C")){
+                                    PlayCubiculoSound();
+                                }
+                                if(moduleTransform.name.Contains("Modulo_G")){
+                                    PlayGavetaSound();
+                                }
                                 Debug.Log("Closing module: " + moduleTransform.name);
                                 animator.SetTrigger("close");
                                 isModuloOpen = false;
@@ -263,6 +326,8 @@ public class InterectionMode : MonoBehaviour
 
     void EnterInteractionMode(GameObject area)
     {
+        PlayInterectionModeSound();
+        ToggleCharacterCollider();
         isInInteractionMode = true;
         inInteractionMode = true;  // Set public variable
         currentInteractionArea = area;
@@ -332,6 +397,7 @@ public class InterectionMode : MonoBehaviour
 
     void ExitInteractionMode()
     {
+        ToggleCharacterCollider();
         // Close all waiting modules
         CloseWaitingModules();
 
