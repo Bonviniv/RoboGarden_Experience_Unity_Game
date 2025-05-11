@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4790390964942145454}
   m_Layer: 0
   m_Name: flor
-  m_TagString: Untagged
+  m_TagString: PlantPart
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -29,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.2044948, y: 0.57183, z: -0.5282262, w: 0.5934388}
   m_LocalPosition: {x: 3.311, y: 1.621, z: 14.533}
-  m_LocalScale: {x: 0.049999997, y: 0.058534622, z: 0.041788097}
+  m_LocalScale: {x: 0.10000001, y: 0.11706926, z: 0.0835762}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}

@@ -12,6 +12,8 @@ TagManager:
   - TrackingObject
   - Actors
   - modulo
+  - plantaSpace
+  - PlantPart
   layers:
   - Default
   - TransparentFX
