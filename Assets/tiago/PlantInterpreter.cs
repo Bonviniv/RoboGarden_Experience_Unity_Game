@@ -192,6 +192,11 @@ void GrowBranch()
     // Criar o cilindro que representa o ramo
     GameObject branchGO = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
     branchGO.name = $"Ramo_{branchIdCounter}";
+    Renderer renderer = branchGO.GetComponent<Renderer>();
+if (renderer != null)
+{
+    renderer.material.color = new Color(0.55f, 0.27f, 0.07f); // marrom (RGB normalizado)
+}
     branchIdCounter++; // Incrementa ID para debug
 
     // Configurar a hierarquia e transformações do cilindro
