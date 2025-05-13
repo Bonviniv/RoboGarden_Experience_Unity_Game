@@ -3,47 +3,63 @@ using UnityEngine;
 
 public class L_SystemGenerator : MonoBehaviour
 {
+    [Header("L-System Settings")]
     public string axiom = "F";
     public int iterations = 5;
 
+    private Dictionary<char, string[]> ruleSets;
 
-    private Dictionary<char, List<string>> rules = new Dictionary<char, List<string>>();
+    private void Awake()
+    {
+        InitializeRules();
+    }
 
-        private void Awake()
+    private void InitializeRules()
+    {
+        ruleSets = new Dictionary<char, string[]>
         {
-            List<string[]> ruleSets = new List<string[]> {
-                new string[] { "F[+F]L[-F]L", "F[+F]L", "L[-F]F" },
-                new string[] { "L[+F]F[+F]", "F[-F]L[-F]", "F[+F[-L]]F" },
-                new string[] { "F[+L[-F]]F", "F[+F]L[-F]", "F[-F[+F]]L" },
-                new string[] { "F[+F]L[+F[-F]]", "F[-L]F[+F]", "F[+F[-F]L]F" }
-            };
-
-            string[] selectedSet = ruleSets[Random.Range(0, ruleSets.Count)];
-            rules['F'] = new List<string>(selectedSet);
-        }   
-
-        public string GeneratePlant()
-        {
-            string current = axiom;
-
-            for (int i = 0; i < iterations; i++)
-            {
-                string next = "";
-                foreach (char c in current)
+            { 'F', new string[]
                 {
-                    if (rules.ContainsKey(c))
-                    {
-                        List<string> options = rules[c];
-                        next += options[Random.Range(0, options.Count)];
-                    }
-                    else
-                    {
-                        next += c.ToString();
-                    }
+                    "F[+F]L[-F]L",
+                    "F[+F]L",
+                    "L[-F]F",
+                    "L[+F]F[+F]",
+                    "F[-F]L[-F]",
+                    "F[+F[-L]]F",
+                    "F[+L[-F]]F",
+                    "F[-F[+F]]L",
+                    "F[+F]L[+F[-F]]",
+                    "F[-L]F[+F]",
+                    "F[+F[-F]L]F"
                 }
-                current = next;
+            }
+        };
+    }
+
+    public string GeneratePlant()
+    {
+        string current = axiom;
+
+        for (int i = 0; i < iterations; i++)
+        {
+            string next = "";
+
+            foreach (char symbol in current)
+            {
+                if (ruleSets.ContainsKey(symbol))
+                {
+                    string[] options = ruleSets[symbol];
+                    next += options[Random.Range(0, options.Length)];
+                }
+                else
+                {
+                    next += symbol.ToString();
+                }
             }
 
-            return current;
+            current = next;
         }
+
+        return current;
+    }
 }

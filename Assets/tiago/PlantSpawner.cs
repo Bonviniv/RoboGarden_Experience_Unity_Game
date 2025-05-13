@@ -9,6 +9,8 @@ public class PlantSpawner : MonoBehaviour
     {
         string result = generator.GeneratePlant();
         Debug.Log(result);
-        interpreter.Interpret(result);
+
+        // Passa o transform como ponto de origem
+        interpreter.Interpret(result, interpreter.transform);
     }
 }
