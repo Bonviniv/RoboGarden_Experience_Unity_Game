@@ -44,11 +44,11 @@ public class ArmarioGenerator : MonoBehaviour
 
     [Header("Prefabs")]
     public GameObject postePrefab;
-    public float posteDistance = -15f; // Distance from armario to post
+    public float posteDistance = 15f; // Distance from armario to post
 
     [Header("Interação com Portas")]
     public GameObject player; // Marvin reference
-    public float doorInteractionRadius = 5f;
+    public float doorInteractionRadius = 15f;
     public Color doorGlowColor = Color.green;
     public float doorGlowIntensity = 0.01f; // Add this new variable
     public float doorSlideSpeed = 2f;
