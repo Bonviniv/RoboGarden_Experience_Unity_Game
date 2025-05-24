@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;  // Add this line
+using System.Linq; 
 
 public class InterectionMode : MonoBehaviour
 {
@@ -13,31 +13,31 @@ public class InterectionMode : MonoBehaviour
     private bool isInInteractionMode = false;
     private Vector3 originalCameraPosition;
     private Quaternion originalCameraRotation;
-    private GameObject currentInteractionArea;
+    private GameObject currentInteractionArea; // Usado para referenciar o poste para a lógica de drop
     public bool showInteractionAreas = false;
     public float spaceFromPoste = -2f;
     public float interactionAreaHeight = 5f;  
-    public bool inInteractionMode = false;  // Add this line
+    public bool inInteractionMode = false;  
     public float interactionRadius = 6f;
     private GameObject currentModulo;
     private bool isModuloOpen = false;
 
-    public AudioClip interactionModeSound;     
+    public AudioClip interactionModeSound;      
     public float volumeInteractionModeSound = 1f;   
 
-    public AudioClip openAndCloseGavetaSound;     
+    public AudioClip openAndCloseGavetaSound;      
     public float volumeOpenAndCloseGavetaSound = 1f; 
 
-    public AudioClip openAndCloseCubiculoSound;     
+    public AudioClip openAndCloseCubiculoSound;      
     public float volumeOpenAndCloseCubiculoSound = 1f; 
 
     void Start()
     {
-        // Get components
         playerController = FindObjectOfType<PlayerController>();
+        if (playerController == null) Debug.LogError("PlayerController not found in scene!");
         cameraScript = camera.GetComponent<CameraScript>();
+        if (cameraScript == null) Debug.LogError("CameraScript not found on camera object!");
         
-        // Delay the creation of interaction areas
         Invoke("CreateInteractionAreas", 1f);
     }
 
@@ -50,23 +50,22 @@ public class InterectionMode : MonoBehaviour
             {
                 capsuleCollider.enabled = !capsuleCollider.enabled;
                 Debug.Log($"Character collider is now {(capsuleCollider.enabled ? "enabled" : "disabled")}");
+            } else {
+                Debug.LogWarning("CapsuleCollider not found on characterCollider!");
             }
+        } else {
+            Debug.LogWarning("CharacterCollider GameObject is not assigned!");
         }
     }
 
     void RotateInteractionArea(GameObject interactionArea, Vector3 postePos, Vector3 armarioPos)
     {
-        // Calculate direction from interaction area to armario
         Vector3 directionToArmario = (armarioPos - postePos).normalized;
-        
-        // Create rotation to face the armario
         Quaternion targetRotation = Quaternion.LookRotation(directionToArmario);
-        
-        // Apply rotation
         interactionArea.transform.rotation = targetRotation;
     }
 
-      void PlayInterectionModeSound()
+    void PlayInterectionModeSound()
     {
         if (interactionModeSound != null)
         {
@@ -74,7 +73,7 @@ public class InterectionMode : MonoBehaviour
         }
     }
 
-        void PlayCubiculoSound()
+    void PlayCubiculoSound()
     {
         if (openAndCloseCubiculoSound != null)
         {
@@ -82,7 +81,7 @@ public class InterectionMode : MonoBehaviour
         }
     }
 
-       void PlayGavetaSound()
+    void PlayGavetaSound()
     {
         if (openAndCloseGavetaSound != null)
         {
@@ -90,38 +89,32 @@ public class InterectionMode : MonoBehaviour
         }
     }
 
-
     void CreateInteractionAreas()
     {
-        // Find all postes by tag
         GameObject[] postes = GameObject.FindGameObjectsWithTag("poste");
-        Debug.Log($"Found {postes.Length} postes");
+        Debug.Log($"Found {postes.Length} postes for interaction areas.");
         
         foreach (GameObject poste in postes)
         {
             GameObject interactionArea = GameObject.CreatePrimitive(PrimitiveType.Cube);
             interactionArea.name = "InteractionArea_" + poste.name;
             
-            // Always destroy the MeshRenderer and MeshFilter
+            // Sempre destrua o MeshRenderer e MeshFilter do primitivo
             Destroy(interactionArea.GetComponent<MeshRenderer>());
             Destroy(interactionArea.GetComponent<MeshFilter>());
             
             Vector3 postePos = poste.transform.position;
             Vector3 armarioPos = poste.transform.parent.position;
 
-            // Check if interaction area would be between poste and armario
             float zOffset = -spaceFromPoste;
             Vector3 posteForward = poste.transform.forward;
             float dotProduct = Vector3.Dot(posteForward, (armarioPos - postePos).normalized);
             
-            // If dot product is positive, poste is facing away from armario
-            // so we need to reverse the offset
             if (dotProduct > 0)
             {
                 zOffset = spaceFromPoste;
             }
 
-            // Position the interaction area using the correct offset
             interactionArea.transform.position = postePos + poste.transform.forward * zOffset;
             interactionArea.transform.position = new Vector3(
                 interactionArea.transform.position.x,
@@ -129,30 +122,29 @@ public class InterectionMode : MonoBehaviour
                 interactionArea.transform.position.z
             );
             
-            // Set debug scale
             interactionArea.transform.localScale = new Vector3(1f, 1f, 1f);
             
             interactionArea.transform.parent = poste.transform.parent;
             
-            // Rotate to face armario
             RotateInteractionArea(interactionArea, postePos, armarioPos);
             
-            // Only disable mesh renderer if not in debug mode
+            // Controla a visibilidade para debug
             if (!showInteractionAreas)
             {
-                Destroy(interactionArea.GetComponent<MeshRenderer>());
+                // Já foram destruídos acima, mas deixo para clareza se mudar de ideia
+                // Destroy(interactionArea.GetComponent<MeshRenderer>()); 
             }
             else
             {
-                // Set a semi-transparent material for debug visualization
-                MeshRenderer renderer = interactionArea.GetComponent<MeshRenderer>();
+                MeshRenderer renderer = interactionArea.AddComponent<MeshRenderer>(); // Adiciona de volta se showInteractionAreas for true
                 Material debugMaterial = new Material(Shader.Find("Standard"));
-                debugMaterial.color = new Color(1f, 0f, 0f, 0.5f); // Semi-transparent red
+                debugMaterial.color = new Color(1f, 0f, 0f, 0.5f); 
                 renderer.material = debugMaterial;
+                interactionArea.AddComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx"); // Adiciona de volta o MeshFilter
             }
             
             interactionAreas.Add(interactionArea);
-            Debug.Log($"Created interaction area at position {interactionArea.transform.position}");
+            Debug.Log($"Created interaction area '{interactionArea.name}' at position {interactionArea.transform.position}");
         }
     }
 
@@ -165,7 +157,7 @@ public class InterectionMode : MonoBehaviour
                 foreach (GameObject area in interactionAreas)
                 {
                     float distance = Vector3.Distance(playerController.transform.position, area.transform.position);
-                    if (distance <= interactionRadius)  // Changed from hardcoded 4f to variable
+                    if (distance <= interactionRadius)
                     {
                         EnterInteractionMode(area);
                         break;
@@ -178,9 +170,9 @@ public class InterectionMode : MonoBehaviour
             }
         }
 
-     if (isInInteractionMode && Input.GetMouseButtonDown(1))
+        if (isInInteractionMode && Input.GetMouseButtonDown(1)) // Botão direito do mouse para interagir
         {
-            Debug.Log("Mouse clicked in interaction mode");
+            Debug.Log("Mouse clicked in interaction mode (Right Click)");
             Ray ray = camera.GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             
@@ -192,129 +184,226 @@ public class InterectionMode : MonoBehaviour
                 Transform moduleTransform = clickedObject.transform;
                 while (moduleTransform != null)
                 {
-                    if (moduleTransform.name.Contains("Modulo_C") || moduleTransform.name.Contains("Modulo_G")|| moduleTransform.name.Contains("Modulo_P"))
+                    if (moduleTransform.name.Contains("Modulo_C") || moduleTransform.name.Contains("Modulo_G") || moduleTransform.name.Contains("Modulo_P"))
                     {
+                        Debug.Log($"Clicked on a Module: {moduleTransform.name}");
                         Transform moduleSpaceForPlant = moduleTransform.Find("planta Space");
                         
-                        
-                            if (moduleSpaceForPlant != null && moduleSpaceForPlant.CompareTag("plantaSpace"))
+                        // Lógica para pegar ou colocar planta
+                        if (moduleSpaceForPlant != null && moduleSpaceForPlant.CompareTag("plantaSpace"))
+                        {
+                            Debug.Log($"Found 'planta Space' for {moduleTransform.name}. Tag: {moduleSpaceForPlant.tag}");
+                            GameObject plantInModule = null;
+                            foreach (Transform child in moduleSpaceForPlant)
                             {
-                                foreach (Transform child in moduleSpaceForPlant)
+                                if (child.gameObject.CompareTag("vaso"))
                                 {
-                                   if (child.gameObject.CompareTag("vaso"))
-{
-    // Get current vaso position and camera position
-    Vector3 currentVasoPos = child.position;
-    Vector3 cameraPos = camera.transform.position;
-    
-    // Calculate drop position between vaso and camera
-    Vector3 dropPosition = (currentVasoPos + cameraPos) / 2f;
-    dropPosition.y = 5f; // Slight offset from ground
-    
-    
-
-    // Drop the plant
-    child.SetParent(null);
-    child.position = dropPosition;
-    child.rotation = Quaternion.identity;
-    Debug.Log("Plant dropped between current position and camera");
-}
+                                    plantInModule = child.gameObject;
+                                    Debug.Log($"Existing plant found in module space: {plantInModule.name}");
+                                    break;
                                 }
                             }
-                        
-                        
-                        // Check if player is carrying a plant
-                        if (playerController.currentPlanta != null)
-                        {
-                            if (moduleSpaceForPlant != null && moduleSpaceForPlant.CompareTag("plantaSpace"))
-                            {
-                                // Check if module already has a plant
-                                bool hasPlant = false;
-                                foreach (Transform child in moduleSpaceForPlant)
-                                {
-                                    if (child.gameObject.CompareTag("vaso"))
-                                    {
-                                        hasPlant = true;
-                                        break;
-                                    }
-                                }
 
-                                if (!hasPlant)
+                            if (playerController.carrying && playerController.currentPlanta != null)
+                            {
+                                Debug.Log($"Player is carrying: {playerController.currentPlanta.name}. Module space occupied: {plantInModule != null}");
+                                if (plantInModule == null) 
                                 {
-                                     Rigidbody rb =  playerController.currentPlanta.GetComponent<Rigidbody>();
-                                     if (rb != null)
-                                       {
-                                        rb.isKinematic = false;
-                                        rb.useGravity = true;
-                                       }
-                                    // Place the plant
-                                    playerController.currentPlanta.transform.SetParent(moduleSpaceForPlant);
-                                    playerController.currentPlanta.transform.localPosition = Vector3.zero;
-                                    playerController.currentPlanta.transform.localRotation = Quaternion.identity;
-                                    
-                                    // Enable all renderers before setting currentPlanta to null
-                                    EnableAllRenderers(playerController.currentPlanta);
-                                    
-                                    // Clear the reference and update carrying state
-                                    playerController.currentPlanta = null;
-                                    playerController.carrying = false;
-                                    UpdateVasoState();
-                                    Debug.Log("Plant placed in module");
+                                    Debug.Log("Attempting to PLACE plant into empty module space.");
+                                    PlacePlantInModule(playerController.currentPlanta, moduleSpaceForPlant.gameObject);
                                 }
+                                else
+                                {
+                                    Debug.Log("Module space already has a plant. Cannot place player's plant here.");
+                                }
+                            }
+                            else if (!playerController.carrying && plantInModule != null)
+                            {
+                                Debug.Log("Player not carrying, but plant exists in module. Attempting to PICK UP from module.");
+                                PickUpPlantFromModule(plantInModule); 
+                            }
+                            else
+                            {
+                                Debug.Log("No plant action: Player not carrying and module space empty, or Player carrying and module space full.");
                             }
                         }
-                        // Handle regular module interaction
+                        else 
+                        {
+                             Debug.LogWarning($"Module {moduleTransform.name} does not have a 'planta Space' child with 'plantaSpace' tag, or 'planta Space' is null. Plant interactions skipped for this module.");
+                        }
+                        
+                        // Lógica para abrir/fechar módulos (gavetas/cubículos)
+                        // Esta lógica deve ser independente da lógica de plantas.
                         Animator animator = moduleTransform.GetComponent<Animator>();
                         if (animator != null)
                         {
+                            // Gerencia o módulo atual para abrir/fechar
                             if (currentModulo != moduleTransform.gameObject)
                             {
-                                 
-                                currentModulo = moduleTransform.gameObject;
-                                
-
-                                isModuloOpen = false;
+                                if (currentModulo != null && isModuloOpen)
+                                {
+                                    Animator oldAnimator = currentModulo.GetComponent<Animator>();
+                                    if (oldAnimator != null)
+                                    {
+                                        if (currentModulo.name.Contains("Modulo_C")){ PlayCubiculoSound(); }
+                                        if (currentModulo.name.Contains("Modulo_G")){ PlayGavetaSound(); }
+                                        oldAnimator.SetTrigger("close");
+                                        Debug.Log("Closing previous module: " + currentModulo.name);
+                                    }
+                                }
+                                currentModulo = moduleTransform.gameObject; 
+                                isModuloOpen = false; 
                             }
 
                             if (!isModuloOpen)
                             {
                                 Debug.Log("Opening module: " + moduleTransform.name);
-                                if(moduleTransform.name.Contains("Modulo_C")){
-                                    PlayCubiculoSound();
-                                }
-                                if(moduleTransform.name.Contains("Modulo_G")){
-                                    PlayGavetaSound();
-                                }
+                                if(moduleTransform.name.Contains("Modulo_C")){ PlayCubiculoSound(); }
+                                if(moduleTransform.name.Contains("Modulo_G")){ PlayGavetaSound(); }
                                 animator.SetTrigger("open");
                                 isModuloOpen = true;
                             }
-                            else
+                            else if (isModuloOpen && currentModulo == moduleTransform.gameObject) 
                             {
-                                if(moduleTransform.name.Contains("Modulo_C")){
-                                    PlayCubiculoSound();
-                                }
-                                if(moduleTransform.name.Contains("Modulo_G")){
-                                    PlayGavetaSound();
-                                }
                                 Debug.Log("Closing module: " + moduleTransform.name);
+                                if(moduleTransform.name.Contains("Modulo_C")){ PlayCubiculoSound(); }
+                                if(moduleTransform.name.Contains("Modulo_G")){ PlayGavetaSound(); }
                                 animator.SetTrigger("close");
                                 isModuloOpen = false;
-                                currentModulo = null;
+                                currentModulo = null; 
                             }
                         }
-                        break;
+                        
+                        break; 
                     }
-                    moduleTransform = moduleTransform.parent;
+                    moduleTransform = moduleTransform.parent; 
                 }
             }
         }
-
-        
     }
 
-        // Add this function near other utility functions
+    void PlacePlantInModule(GameObject plantToPlace, GameObject targetPlantSpace)
+    {
+        Debug.Log("PlacePlantInModule called."); // Diagnóstico 1
+
+        if (plantToPlace == null || targetPlantSpace == null)
+        {
+            Debug.LogError("PlacePlantInModule: Invalid plant or target space. Aborting."); // Diagnóstico 2
+            return;
+        }
+
+        Debug.Log($"PlacePlantInModule: plantToPlace = {plantToPlace.name}, targetPlantSpace = {targetPlantSpace.name}"); // Diagnóstico 2 (detalhado)
+
+        // 1. Desparenta da mão do player primeiro (se ainda estiver parentado)
+        plantToPlace.transform.SetParent(null); 
+        Debug.Log($"Plant {plantToPlace.name} detached from previous parent.");
+        
+        // 2. Agora parenta ao targetPlantSpace
+        plantToPlace.transform.SetParent(targetPlantSpace.transform);
+        plantToPlace.transform.localPosition = Vector3.zero; 
+        plantToPlace.transform.localRotation = Quaternion.identity; 
+
+        Debug.Log($"After SetParent: Plant parent is {plantToPlace.transform.parent?.name}. Plant local position: {plantToPlace.transform.localPosition}. Plant world position: {plantToPlace.transform.position}"); // Diagnóstico 3
+
+        // 3. Garante que o Rigidbody seja cinemático
+        Rigidbody rb = plantToPlace.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            rb.linearVelocity = Vector3.zero;     
+            rb.angularVelocity = Vector3.zero; 
+            Debug.Log($"Rigidbody: isKinematic = {rb.isKinematic}, useGravity = {rb.useGravity}, velocity = {rb.linearVelocity}."); // Diagnóstico 4
+        }
+        else
+        {
+            Debug.LogWarning($"Rigidbody not found on plantToPlace! Object name: {plantToPlace.name}"); // Diagnóstico 4 (Erro)
+        }
+
+        // 4. Habilita renderers caso tivessem sido desativados
+        EnableAllRenderers(plantToPlace); 
+        Debug.Log("Renderers enabled for plant.");
+
+        // 5. INFORMA O PLAYERCONTROLLER QUE A PLANTA FOI COLOCADA
+        if (playerController != null)
+        {
+            playerController.currentPlanta = null; 
+            playerController.currentVaso = null;   
+            playerController.carrying = false;     
+            playerController.UpdateVasosCache();   
+            Debug.Log($"PlayerController state: carrying = {playerController.carrying}, currentPlanta = {playerController.currentPlanta?.name}"); // Diagnóstico 5
+        }
+        else
+        {
+            Debug.LogError("PlayerController reference is null when trying to update state in PlacePlantInModule!");
+        }
+
+        Debug.Log($"PlacePlantInModule finished for plant {plantToPlace.name}.");
+    }
+
+    void PickUpPlantFromModule(GameObject plantToPickUp)
+    {
+        Debug.Log("PickUpPlantFromModule called.");
+
+        if (plantToPickUp == null)
+        {
+            Debug.LogError("PickUpPlantFromModule: Invalid plant to pick up.");
+            return;
+        }
+
+        plantToPickUp.transform.SetParent(null);
+        Debug.Log($"Plant {plantToPickUp.name} detached from module for drop.");
+
+        Vector3 dropPosition = playerModel.transform.position + playerModel.transform.forward * 1.5f; 
+        if (playerController != null)
+        {
+            dropPosition.y = playerController.GetGroundHeight(playerModel.transform.position) + 0.05f; 
+        } else {
+            dropPosition.y = 0.05f; // Fallback se playerController for null
+            Debug.LogWarning("PlayerController is null, using default ground height for plant drop.");
+        }
+        
+        plantToPickUp.transform.position = dropPosition;
+        plantToPickUp.transform.rotation = Quaternion.identity; 
+        Debug.Log($"Plant {plantToPickUp.name} targeted drop position: {plantToPickUp.transform.position}");
+
+        Rigidbody rb = plantToPickUp.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false; 
+            rb.useGravity = true;   
+            rb.linearVelocity = Vector3.zero; 
+            rb.angularVelocity = Vector3.zero; 
+            Debug.Log($"Rigidbody for {plantToPickUp.name} set to non-kinematic and gravity enabled.");
+        }
+        else
+        {
+            Debug.LogWarning($"PickUpPlantFromModule: No Rigidbody found on {plantToPickUp.name}. Plant will not fall.");
+        }
+
+        EnableAllRenderers(plantToPickUp); 
+        Debug.Log("Renderers enabled for dropped plant.");
+
+        if (playerController != null)
+        {
+            playerController.currentPlanta = null;
+            playerController.currentVaso = null;
+            playerController.carrying = false;
+            playerController.UpdateVasosCache();
+            Debug.Log($"PlayerController state updated after dropping: carrying = {playerController.carrying}, currentPlanta = {playerController.currentPlanta?.name}");
+        }
+
+        Debug.Log($"Plant {plantToPickUp.name} dropped from module.");
+    }
+
+
+    // ... (rest of the class) ...
+    // --- Funções Auxiliares Existentes (sem alteração) ---
+
     void UpdateVasoState()
     {
+        // This function is still called by old logic, but might become redundant
+        // if PlayerController methods are used consistently.
         if (playerController != null)
         {
             playerController.currentVaso = null;
@@ -329,54 +418,43 @@ public class InterectionMode : MonoBehaviour
         PlayInterectionModeSound();
         ToggleCharacterCollider();
         isInInteractionMode = true;
-        inInteractionMode = true;  // Set public variable
+        inInteractionMode = true; 
         currentInteractionArea = area;
 
-        // Disable player movement
         if (playerController != null)
         {
-           // playerController.enabled = false;
+            // playerController.enabled = false; // Uncomment if you want to disable player movement entirely
         }
 
-        // Store camera's original state
         originalCameraPosition = camera.transform.position;
         originalCameraRotation = camera.transform.rotation;
 
-        // Show cursor
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
-        // Disable player model renderer
         if (playerModel != null)
         {
             SetRendererState(playerModel, false);
-          
         }
 
-        // Disable plant renderer if carrying one
         if (playerController.currentPlanta != null)
         {
             SetRendererState(playerController.currentPlanta, false);
         }
 
-        // Fix camera position and rotation
         camera.transform.position = area.transform.position;
         
-        // Get current Y rotation and snap to nearest 180 or 0
         float currentYRotation = camera.transform.eulerAngles.y;
         float targetYRotation = (currentYRotation > 90 && currentYRotation < 270) ? 180 : 0;
         
-        // Set camera rotation with X and Z = 0
         camera.transform.rotation = Quaternion.Euler(0, targetYRotation, 0);
         
-        // Disable camera script
         if (cameraScript != null)
         {
             cameraScript.enabled = false;
         }
     }
 
-    // Add this function after SetRendererState
     void CloseWaitingModules()
     {
         GameObject[] allModulos = GameObject.FindGameObjectsWithTag("modulo");
@@ -398,10 +476,8 @@ public class InterectionMode : MonoBehaviour
     void ExitInteractionMode()
     {
         ToggleCharacterCollider();
-        // Close all waiting modules
         CloseWaitingModules();
 
-        // Close current module if left open
         if (currentModulo != null && isModuloOpen)
         {
             Animator animator = currentModulo.GetComponent<Animator>();
@@ -413,39 +489,30 @@ public class InterectionMode : MonoBehaviour
             isModuloOpen = false;
         }
 
-
         isInInteractionMode = false;
-        inInteractionMode = false;  // Set public variable
+        inInteractionMode = false; 
 
-        // Enable player movement
         if (playerController != null)
         {
             playerController.enabled = true;
         }
 
-        // Hide cursor when exiting
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
-        isInInteractionMode = false;
-
-        // Enable player model renderer
         if (playerModel != null)
         {
             SetRendererState(playerModel, true);
         }
 
-        // Enable plant renderer if carrying one
         if (playerController.currentPlanta != null)
         {
             SetRendererState(playerController.currentPlanta, true);
         }
 
-        // Restore camera
         camera.transform.position = originalCameraPosition;
         camera.transform.rotation = originalCameraRotation;
         
-        // Enable camera script
         if (cameraScript != null)
         {
             cameraScript.enabled = true;
@@ -456,39 +523,31 @@ public class InterectionMode : MonoBehaviour
 
     void SetRendererState(GameObject obj, bool state)
     {
-        // Handle regular MeshRenderers
         MeshRenderer[] meshRenderers = obj.GetComponentsInChildren<MeshRenderer>();
         foreach (MeshRenderer renderer in meshRenderers)
         {
             renderer.enabled = state;
         }
 
-        // Handle SkinnedMeshRenderers
         SkinnedMeshRenderer[] skinnedRenderers = obj.GetComponentsInChildren<SkinnedMeshRenderer>();
         foreach (SkinnedMeshRenderer renderer in skinnedRenderers)
         {
             renderer.enabled = state;
         }
     }
- // Add this utility function
+
     void EnableAllRenderers(GameObject obj)
     {
-        // Enable all MeshRenderers
         MeshRenderer[] meshRenderers = obj.GetComponentsInChildren<MeshRenderer>(true);
         foreach (MeshRenderer renderer in meshRenderers)
         {
             renderer.enabled = true;
         }
 
-        // Enable all SkinnedMeshRenderers
         SkinnedMeshRenderer[] skinnedRenderers = obj.GetComponentsInChildren<SkinnedMeshRenderer>(true);
         foreach (SkinnedMeshRenderer renderer in skinnedRenderers)
         {
             renderer.enabled = true;
         }
     }
-
-
-
-
 }

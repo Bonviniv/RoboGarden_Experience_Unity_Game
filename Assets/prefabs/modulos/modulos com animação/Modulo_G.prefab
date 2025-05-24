@@ -717,6 +717,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlantGenerator
       objectReference: {fileID: 0}
+    - target: {fileID: 7677046910259709220, guid: db80be4689a9ad94880604e5d49aac94, type: 3}
+      propertyPath: m_TagString
+      value: vaso
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
