@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq; 
+using System.Collections; // Make sure you have this line at the top of your script
+
 
 public class InterectionMode : MonoBehaviour
 {
@@ -30,6 +32,17 @@ public class InterectionMode : MonoBehaviour
 
     public AudioClip openAndCloseCubiculoSound;      
     public float volumeOpenAndCloseCubiculoSound = 1f; 
+
+    private float lastInteractionTime = 0f;
+    public float interactionCooldown = 1f; // Adjust as needed, e.g., 1 seconds
+
+    public bool inInterection = false;
+
+    public int tick = 0;
+    public int tickInterval = 10; // Define o intervalo de ticks para alternar o estado de interação
+
+    private bool canPickOrDrop = true;
+
 
     void Start()
     {
@@ -150,6 +163,7 @@ public class InterectionMode : MonoBehaviour
 
     void Update()
     {
+        tick++;
         if (Input.GetKeyDown(KeyCode.I))
         {
             if (!isInInteractionMode)
@@ -170,17 +184,27 @@ public class InterectionMode : MonoBehaviour
             }
         }
 
+       
+
+
+        // AQUI É A PARTE ALTERADA
         if (isInInteractionMode && Input.GetMouseButtonDown(1)) // Botão direito do mouse para interagir
         {
+
+             if (Cursor.lockState == CursorLockMode.Locked)
+        {
+             Cursor.lockState = CursorLockMode.None;
+          // Lógica para quando o cursor está bloqueado
+        }
             Debug.Log("Mouse clicked in interaction mode (Right Click)");
             Ray ray = camera.GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            
+
             if (Physics.Raycast(ray, out hit, 100f))
             {
                 GameObject clickedObject = hit.transform.gameObject;
                 Debug.Log("Raycast hit: " + clickedObject.name);
-                
+
                 Transform moduleTransform = clickedObject.transform;
                 while (moduleTransform != null)
                 {
@@ -188,7 +212,7 @@ public class InterectionMode : MonoBehaviour
                     {
                         Debug.Log($"Clicked on a Module: {moduleTransform.name}");
                         Transform moduleSpaceForPlant = moduleTransform.Find("planta Space");
-                        
+
                         // Lógica para pegar ou colocar planta
                         if (moduleSpaceForPlant != null && moduleSpaceForPlant.CompareTag("plantaSpace"))
                         {
@@ -207,10 +231,17 @@ public class InterectionMode : MonoBehaviour
                             if (playerController.carrying && playerController.currentPlanta != null)
                             {
                                 Debug.Log($"Player is carrying: {playerController.currentPlanta.name}. Module space occupied: {plantInModule != null}");
-                                if (plantInModule == null) 
+                                if (plantInModule == null)
                                 {
-                                    Debug.Log("Attempting to PLACE plant into empty module space.");
-                                    PlacePlantInModule(playerController.currentPlanta, moduleSpaceForPlant.gameObject);
+                                    if (canPickOrDrop )
+                                    {
+                                        Debug.Log("Attempting to PLACE plant into empty module space.");
+                                        Cursor.lockState = CursorLockMode.Locked;
+                                        StartCoroutine(corrotineToPlace(playerController.currentPlanta, moduleSpaceForPlant.gameObject));
+
+                                        //PlacePlantInModule(playerController.currentPlanta, moduleSpaceForPlant.gameObject);
+
+                                    }
                                 }
                                 else
                                 {
@@ -219,19 +250,35 @@ public class InterectionMode : MonoBehaviour
                             }
                             else if (!playerController.carrying && plantInModule != null)
                             {
-                                Debug.Log("Player not carrying, but plant exists in module. Attempting to PICK UP from module.");
-                                PickUpPlantFromModule(plantInModule); 
+                                if (canPickOrDrop )
+                                {
+                                    tick = 0; // Reset tick to prevent multiple placements in the same tick    
+                                    Debug.Log($"Player not carrying, but plant exists in module: {plantInModule.name}. Attempting to PICK UP.");
+                                    playerController.currentPlanta = plantInModule;
+                                    playerController.currentVaso = plantInModule;
+                                    playerController.carrying = true;
+                                    playerController.UpdateVasosCache();
+
+                                    // Desparenta a planta do módulo e habilita renderers
+                                    Cursor.lockState = CursorLockMode.Locked;
+
+                                    StartCoroutine(corrotineToPick(plantInModule));
+                                    //PickUpPlantFromModule(plantInModule);
+                                }
+
+
                             }
+
                             else
                             {
                                 Debug.Log("No plant action: Player not carrying and module space empty, or Player carrying and module space full.");
                             }
                         }
-                        else 
+                        else
                         {
-                             Debug.LogWarning($"Module {moduleTransform.name} does not have a 'planta Space' child with 'plantaSpace' tag, or 'planta Space' is null. Plant interactions skipped for this module.");
+                            Debug.LogWarning($"Module {moduleTransform.name} does not have a 'planta Space' child with 'plantaSpace' tag, or 'planta Space' is null. Plant interactions skipped for this module.");
                         }
-                        
+
                         // Lógica para abrir/fechar módulos (gavetas/cubículos)
                         // Esta lógica deve ser independente da lógica de plantas.
                         Animator animator = moduleTransform.GetComponent<Animator>();
@@ -245,101 +292,112 @@ public class InterectionMode : MonoBehaviour
                                     Animator oldAnimator = currentModulo.GetComponent<Animator>();
                                     if (oldAnimator != null)
                                     {
-                                        if (currentModulo.name.Contains("Modulo_C")){ PlayCubiculoSound(); }
-                                        if (currentModulo.name.Contains("Modulo_G")){ PlayGavetaSound(); }
+                                        if (currentModulo.name.Contains("Modulo_C")) { PlayCubiculoSound(); }
+                                        if (currentModulo.name.Contains("Modulo_G")) { PlayGavetaSound(); }
                                         oldAnimator.SetTrigger("close");
                                         Debug.Log("Closing previous module: " + currentModulo.name);
                                     }
                                 }
-                                currentModulo = moduleTransform.gameObject; 
-                                isModuloOpen = false; 
+                                currentModulo = moduleTransform.gameObject;
+                                isModuloOpen = false;
                             }
 
                             if (!isModuloOpen)
                             {
                                 Debug.Log("Opening module: " + moduleTransform.name);
-                                if(moduleTransform.name.Contains("Modulo_C")){ PlayCubiculoSound(); }
-                                if(moduleTransform.name.Contains("Modulo_G")){ PlayGavetaSound(); }
+                                if (moduleTransform.name.Contains("Modulo_C")) { PlayCubiculoSound(); }
+                                if (moduleTransform.name.Contains("Modulo_G")) { PlayGavetaSound(); }
                                 animator.SetTrigger("open");
                                 isModuloOpen = true;
                             }
-                            else if (isModuloOpen && currentModulo == moduleTransform.gameObject) 
+                            else if (isModuloOpen && currentModulo == moduleTransform.gameObject)
                             {
                                 Debug.Log("Closing module: " + moduleTransform.name);
-                                if(moduleTransform.name.Contains("Modulo_C")){ PlayCubiculoSound(); }
-                                if(moduleTransform.name.Contains("Modulo_G")){ PlayGavetaSound(); }
+                                if (moduleTransform.name.Contains("Modulo_C")) { PlayCubiculoSound(); }
+                                if (moduleTransform.name.Contains("Modulo_G")) { PlayGavetaSound(); }
                                 animator.SetTrigger("close");
                                 isModuloOpen = false;
-                                currentModulo = null; 
+                                currentModulo = null;
                             }
                         }
-                        
-                        break; 
+
+                        break;
                     }
-                    moduleTransform = moduleTransform.parent; 
+                    moduleTransform = moduleTransform.parent;
                 }
             }
         }
-    }
-
-    void PlacePlantInModule(GameObject plantToPlace, GameObject targetPlantSpace)
-    {
-        Debug.Log("PlacePlantInModule called."); // Diagnóstico 1
-
-        if (plantToPlace == null || targetPlantSpace == null)
-        {
-            Debug.LogError("PlacePlantInModule: Invalid plant or target space. Aborting."); // Diagnóstico 2
-            return;
-        }
-
-        Debug.Log($"PlacePlantInModule: plantToPlace = {plantToPlace.name}, targetPlantSpace = {targetPlantSpace.name}"); // Diagnóstico 2 (detalhado)
-
-        // 1. Desparenta da mão do player primeiro (se ainda estiver parentado)
-        plantToPlace.transform.SetParent(null); 
-        Debug.Log($"Plant {plantToPlace.name} detached from previous parent.");
         
-        // 2. Agora parenta ao targetPlantSpace
-        plantToPlace.transform.SetParent(targetPlantSpace.transform);
-        plantToPlace.transform.localPosition = Vector3.zero; 
-        plantToPlace.transform.localRotation = Quaternion.identity; 
-
-        Debug.Log($"After SetParent: Plant parent is {plantToPlace.transform.parent?.name}. Plant local position: {plantToPlace.transform.localPosition}. Plant world position: {plantToPlace.transform.position}"); // Diagnóstico 3
-
-        // 3. Garante que o Rigidbody seja cinemático
-        Rigidbody rb = plantToPlace.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-            rb.linearVelocity = Vector3.zero;     
-            rb.angularVelocity = Vector3.zero; 
-            Debug.Log($"Rigidbody: isKinematic = {rb.isKinematic}, useGravity = {rb.useGravity}, velocity = {rb.linearVelocity}."); // Diagnóstico 4
-        }
-        else
-        {
-            Debug.LogWarning($"Rigidbody not found on plantToPlace! Object name: {plantToPlace.name}"); // Diagnóstico 4 (Erro)
-        }
-
-        // 4. Habilita renderers caso tivessem sido desativados
-        EnableAllRenderers(plantToPlace); 
-        Debug.Log("Renderers enabled for plant.");
-
-        // 5. INFORMA O PLAYERCONTROLLER QUE A PLANTA FOI COLOCADA
-        if (playerController != null)
-        {
-            playerController.currentPlanta = null; 
-            playerController.currentVaso = null;   
-            playerController.carrying = false;     
-            playerController.UpdateVasosCache();   
-            Debug.Log($"PlayerController state: carrying = {playerController.carrying}, currentPlanta = {playerController.currentPlanta?.name}"); // Diagnóstico 5
-        }
-        else
-        {
-            Debug.LogError("PlayerController reference is null when trying to update state in PlacePlantInModule!");
-        }
-
-        Debug.Log($"PlacePlantInModule finished for plant {plantToPlace.name}.");
     }
+ void PlacePlantInModule(GameObject plantToPlace, GameObject targetPlantSpace)
+{
+    Debug.Log("PlacePlantInModule called."); // Diagnóstico 1
+
+    if (plantToPlace == null || targetPlantSpace == null)
+    {
+        Debug.LogError("PlacePlantInModule: Invalid plant or target space. Aborting."); // Diagnóstico 2
+        return;
+    }
+
+    StartCoroutine(ResetCanPickOrDrop());
+
+    Debug.Log($"PlacePlantInModule: plantToPlace = {plantToPlace.name}, targetPlantSpace = {targetPlantSpace.name}"); // Diagnóstico 2 (detalhado)
+
+    // 1. Desparenta da mão do player primeiro (se ainda estiver parentado)
+    plantToPlace.transform.SetParent(null);
+    Debug.Log($"Plant {plantToPlace.name} detached from previous parent.");
+
+    // 3. Garante que o Rigidbody seja cinemático
+    Rigidbody rb = plantToPlace.GetComponent<Rigidbody>();
+    if (rb != null)
+    {
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        Debug.Log($"Rigidbody: isKinematic = {rb.isKinematic}, useGravity = {rb.useGravity}, velocity = {rb.linearVelocity}."); // Diagnóstico 4
+    }
+    else
+    {
+        Debug.LogWarning($"Rigidbody not found on plantToPlace! Object name: {plantToPlace.name}"); // Diagnóstico 4 (Erro)
+    }
+
+    // 2. Agora parenta ao targetPlantSpace
+    plantToPlace.transform.SetParent(targetPlantSpace.transform);
+    plantToPlace.transform.localPosition = Vector3.zero; // Garante que a posição local seja 0,0,0 primeiro
+    plantToPlace.transform.localRotation = Quaternion.identity;
+
+    Debug.Log($"After SetParent: Plant parent is {plantToPlace.transform.parent?.name}. Plant local position: {plantToPlace.transform.localPosition}. Plant world position: {plantToPlace.transform.position}"); // Diagnóstico 3
+
+    // Deslocar a planta -0.4f no eixo Y localmente como o último passo
+    plantToPlace.transform.localPosition += new Vector3(0f, -0.4f, 0f); // ESTA É A LINHA QUE VOCÊ PEDIU
+
+    // 4. Habilita renderers caso tivessem sido desativados
+    EnableAllRenderers(plantToPlace);
+    Debug.Log("Renderers enabled for plant.");
+
+    // 5. INFORMA O PLAYERCONTROLLER QUE A PLANTA FOI COLOCADA
+    if (playerController != null)
+    {
+        playerController.currentPlanta = null;
+        playerController.currentVaso = null;
+        playerController.carrying = false;
+        playerController.UpdateVasosCache();
+        Animator animator = playerController.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.SetTrigger("drop");
+        }
+
+        Debug.Log($"PlayerController state: carrying = {playerController.carrying}, currentPlanta = {playerController.currentPlanta?.name}"); // Diagnóstico 5
+    }
+    else
+    {
+        Debug.LogError("PlayerController reference is null when trying to update state in PlacePlantInModule!");
+    }
+
+    Debug.Log($"PlacePlantInModule finished for plant {plantToPlace.name}.");
+}
 
     void PickUpPlantFromModule(GameObject plantToPickUp)
     {
@@ -351,29 +409,33 @@ public class InterectionMode : MonoBehaviour
             return;
         }
 
+        StartCoroutine(ResetCanPickOrDrop());
+
         plantToPickUp.transform.SetParent(null);
         Debug.Log($"Plant {plantToPickUp.name} detached from module for drop.");
 
-        Vector3 dropPosition = playerModel.transform.position + playerModel.transform.forward * 1.5f; 
+        Vector3 dropPosition = playerModel.transform.position + playerModel.transform.forward * 1.5f;
         if (playerController != null)
         {
-            dropPosition.y = playerController.GetGroundHeight(playerModel.transform.position) + 0.05f; 
-        } else {
+            dropPosition.y = playerController.GetGroundHeight(playerModel.transform.position) + 0.05f;
+        }
+        else
+        {
             dropPosition.y = 0.05f; // Fallback se playerController for null
             Debug.LogWarning("PlayerController is null, using default ground height for plant drop.");
         }
-        
+
         plantToPickUp.transform.position = dropPosition;
-        plantToPickUp.transform.rotation = Quaternion.identity; 
+        plantToPickUp.transform.rotation = Quaternion.identity;
         Debug.Log($"Plant {plantToPickUp.name} targeted drop position: {plantToPickUp.transform.position}");
 
         Rigidbody rb = plantToPickUp.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.isKinematic = false; 
-            rb.useGravity = true;   
-            rb.linearVelocity = Vector3.zero; 
-            rb.angularVelocity = Vector3.zero; 
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
             Debug.Log($"Rigidbody for {plantToPickUp.name} set to non-kinematic and gravity enabled.");
         }
         else
@@ -381,7 +443,7 @@ public class InterectionMode : MonoBehaviour
             Debug.LogWarning($"PickUpPlantFromModule: No Rigidbody found on {plantToPickUp.name}. Plant will not fall.");
         }
 
-        EnableAllRenderers(plantToPickUp); 
+        EnableAllRenderers(plantToPickUp);
         Debug.Log("Renderers enabled for dropped plant.");
 
         if (playerController != null)
@@ -394,6 +456,43 @@ public class InterectionMode : MonoBehaviour
         }
 
         Debug.Log($"Plant {plantToPickUp.name} dropped from module.");
+
+    }
+
+
+    private IEnumerator ResetCanPickOrDrop()
+    {
+    canPickOrDrop = false; // Define a variável como false
+    yield return new WaitForSeconds(0.1f); // Espera por 2 segundos
+    canPickOrDrop = true; // Define a variável como true novamente
+   }
+    
+   private IEnumerator corrotineToPick(GameObject plantToPickUp)
+    {
+    
+    yield return new WaitForSeconds(1f); // Espera por 2 segundos
+        if (canPickOrDrop)
+        {
+            PickUpPlantFromModule(plantToPickUp);
+        }
+   }
+
+   
+   private IEnumerator corrotineToPlace(GameObject plantToPlace, GameObject targetPlantSpace)
+    {
+    
+    yield return new WaitForSeconds(0.5f); // Espera por 2 segundos
+        if (canPickOrDrop)
+        {
+            PlacePlantInModule(plantToPlace, targetPlantSpace);
+        }
+   }
+
+
+
+    void changeInteractionTick() 
+    {
+        inInterection = !inInterection;
     }
 
 

@@ -366,7 +366,7 @@ void HighlightClosestVaso()
             canPick = true;
             currentVaso = closestVasoGameObject; // currentVaso é o GameObject "Vaso"
 
-            Debug.Log($"Closest vaso found (actual Vaso GameObject): {currentVaso.name} at distance {minDist}.");
+            //Debug.Log($"Closest vaso found (actual Vaso GameObject): {currentVaso.name} at distance {minDist}.");
 
             // Highlight the 'vaso' mesh child of this 'currentVaso' ("Vaso" GameObject)
             Transform vasoMeshToHighlight = currentVaso.transform.Find("vaso"); // <--- PONTO DE VERIFICAÇÃO 2
@@ -376,12 +376,12 @@ void HighlightClosestVaso()
                  if (rend != null)
                      rend.material.color = Color.green; // <--- AQUI A COR DEVERIA MUDAR
             } else {
-                 Debug.LogWarning($"Could not find 'vaso' mesh child under {currentVaso.name} for highlight. Check mesh name and hierarchy.");
+                 //Debug.LogWarning($"Could not find 'vaso' mesh child under {currentVaso.name} for highlight. Check mesh name and hierarchy.");
             }
         }
         else
         {
-            Debug.Log("No vaso found within interaction distance. canPick is now false.");
+           // Debug.Log("No vaso found within interaction distance. canPick is now false.");
         }
     }
     
