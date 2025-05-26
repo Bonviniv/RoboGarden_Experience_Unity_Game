@@ -5,6 +5,9 @@ using System.Linq;
 using System.Text;
 
 [System.Serializable]
+
+// Interpreta instruções L-Systems para gerar plantas 3D
+// Controla crescimento, folhas, flores e efeitos de vento
 public class ProductionRule
 {
     public char predecessor;

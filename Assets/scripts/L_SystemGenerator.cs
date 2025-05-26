@@ -1,12 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Gera instruções para plantas usando L-Systems
+// Cria padrões complexos a partir de regras simples
 public class L_SystemGenerator : MonoBehaviour
 {
     [Header("L-System Settings")]
+    // Configuração do L-System
     public string axiom = "F";
     public int iterations = 5;
 
+    // Conjunto de regras estocásticas
     private Dictionary<char, string[]> ruleSets;
 
     private void Awake()

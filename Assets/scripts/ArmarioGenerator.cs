@@ -4,16 +4,20 @@ using UnityEngine;
 using System.Linq;
 using System.Collections;
 
+// Gera armários modulares baseados em configurações XML
+// Controla a estrutura externa, módulos internos e interação com portas
 public class ArmarioGenerator : MonoBehaviour
 {
     [Header("Deslocamento da estrutura externa")]
     public Vector3 deslocamentoEstrutura = new Vector3(-1f, 0f, 0f);
 
+    // Prefabs para os módulos (Pequeno, Cubículo, Gaveta)
     [Header("Prefabs dos módulos")]
     public GameObject moduloP;
     public GameObject moduloC;
     public GameObject moduloG;
 
+    // Materiais para metal e vidro
     [Header("Materiais")]
     public Material metalMaterial;
     public Material vidroMaterial;
@@ -126,19 +130,19 @@ public class ArmarioGenerator : MonoBehaviour
             // A posição e rotação do poste deve ser ajustada para ficar na frente do armário.
             // Assumimos que o postePrefab tem a frente (Z positivo) para onde deve apontar.
             GameObject poste = Instantiate(postePrefab, armarioRoot.transform); // Instancia como filho do armarioRoot
-            
+
             // Posiciona o poste na frente do armário. O centro do armário é (width/2, height/2, depth/2).
             // A frente do armário é na direção Z positiva em relação à sua localPosition.
             // Para posicionar na frente, usaremos o eixo Z local do armarioRoot.
             // O poste deve ser deslocado para fora do armário.
             poste.transform.localPosition = new Vector3(width / 2f, -0.5f, internalDepth + posteDistance);
-            
+
             // Se o poste for um candeeiro que ilumina o armário, ele deve estar virado para o armário.
             // Sua rotação padrão pode precisar ser ajustada para apontar para trás.
             // Assumindo que postePrefab já está orientado corretamente ou pode ser rotacionado.
             // Se o poste aponta para Z+ por padrão e queremos que ele ilumine o armário (que está em Z-),
             // ele precisa ser rotacionado 180 graus no eixo Y.
-            poste.transform.localRotation = Quaternion.Euler(0, 180, 0); 
+            poste.transform.localRotation = Quaternion.Euler(0, 180, 0);
 
 
 
@@ -168,7 +172,7 @@ public class ArmarioGenerator : MonoBehaviour
                 modulo.transform.localRotation = Quaternion.identity;
                 // A função ArrumarOrientacoes precisa ser ajustada, pois armarioSpace não é mais relevante aqui
                 // Ela provavelmente deveria apenas ajustar a orientação do módulo.
-                ArrumarOrientacoesModulo(modulo); 
+                ArrumarOrientacoesModulo(modulo);
             }
         }
 
@@ -195,13 +199,13 @@ public class ArmarioGenerator : MonoBehaviour
         {
             string doorName = entry.Key;
             Transform parentTransform = entry.Value.parent; // Onde a porta foi originalmente salva
-            
+
             // Re-encontra a porta no cenário usando o nome e o pai para garantir que é a porta correta deste armário.
             // Isso é importante se você tiver portas com nomes repetidos em outros armários.
             // Para simplificar, podemos assumir que os nomes das portas são únicos por armário,
             // ou podemos usar GetChild para buscar apenas nas portas filhas do armarioRoot.
             // A busca abaixo é mais genérica, mas se os nomes forem únicos, está ok.
-            GameObject door = parentTransform.Find(doorName)?.gameObject; 
+            GameObject door = parentTransform.Find(doorName)?.gameObject;
 
             if (door == null) continue; // Porta não encontrada (talvez o nome não seja único ou foi destruída)
 

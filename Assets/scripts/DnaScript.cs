@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
+// Controla a animação de flutuação e rotação de um objeto DNA
+// Aplica efeito Bloom para realçar o objeto
 public class DNAFloatAndRotate : MonoBehaviour
 {
     [Header("Rotação")]

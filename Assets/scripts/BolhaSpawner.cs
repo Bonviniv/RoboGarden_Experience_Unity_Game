@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
+// Gera bolhas que flutuam dentro de um cilindro invisível
+// Controla o efeito visual e o Bloom pós-processamento
 public class BolhaSpawner : MonoBehaviour
 {
+    // Configuração do cilindro onde as bolhas são geradas
     [Header("Configuração do Cilindro")]
     public float cylinderRadius = 0.3f;
     public float cylinderHeight = 1.5f;
 
+    // Configuração das bolhas
     [Header("Bolhas")]
     public GameObject bolhaPrefab;
     public int bolhaPoolSize = 20;
@@ -16,6 +20,7 @@ public class BolhaSpawner : MonoBehaviour
     public Vector2 bolhaScaleRange = new Vector2(0.05f, 0.15f);
     public float spawnInterval = 0.4f; // ← intervalo entre bolhas em segundos
 
+    // Efeito Bloom para realçar as bolhas
     [Header("Efeito Bloom")]
     public float bloomIntensity = 0.7f;
     public Color bloomTint = Color.white;

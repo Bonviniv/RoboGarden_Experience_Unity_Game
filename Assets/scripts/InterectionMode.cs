@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq; 
 using System.Collections; // Make sure you have this line at the top of your script
 
-
+// Controla o modo de interação com módulos do armário
+// Permite abrir/fechar gavetas, cubículos e manipular plantas
 public class InterectionMode : MonoBehaviour
 {
     public GameObject playerModel;
