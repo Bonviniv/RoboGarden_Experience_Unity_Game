@@ -8,19 +8,19 @@ Updates: https://www.youtube.com/playlist?list=PLyA90E6LMq-4-M9vp_2Kjqof8fvdqNLs
 ## TODO
 
 ### Plantas
-- [ ] Fazer com que seja possível colocar plantas na bancada
-- [ ] Não permitir que o robo pegue plantas do armario sem estar no interection mode (agora pega atraves do armario)
-- [ ] Limitar a altura das plantas para que não saiam dos módulos ou mudar a escala dos armarios ou dos vasos dependendo da geração feita
-- [ ] Rever a colocação de folhas e flores para que apareçam apenas nos ramos terminais e não haja sobreposição
-- [ ] Rever a colocação de folhas em ramos não terminais, mas flores apenas nos terminais
-- [ ] Adicionar um *slider* para visualizar o crescimento da planta
-- [ ] Adicionar metodos pra alterar os parametros de crescimento de uma planta a escolha do user (mudar rules, iterações...)
+- [Done] Fazer com que seja possível colocar plantas na bancada
+- [Done] Não permitir que o robo pegue plantas do armario sem estar no interection mode (agora pega atraves do armario)
+- [Done] Limitar a altura das plantas para que não saiam dos módulos ou mudar a escala dos armarios ou dos vasos dependendo da geração feita
+- [Done] Rever a colocação de folhas e flores para que apareçam apenas nos ramos terminais e não haja sobreposição
+- [Done] Rever a colocação de folhas em ramos não terminais, mas flores apenas nos terminais
+- [Doing] Adicionar um *slider* para visualizar o crescimento da planta
+- [Doing] Adicionar metodos pra alterar os parametros de crescimento de uma planta a escolha do user (mudar rules, iterações...)
 
 ### Cenário
-- [ ] Adicionar mais sons à cena e ao personagem (associar som ao movimento do robo)
-- [ ] Regular o volume dos sons da cena e do personagem  
+- [Done] Adicionar mais sons à cena e ao personagem (associar som ao movimento do robo)
+- [Doing] Regular o volume dos sons da cena e do personagem  
 - [ ] Fazer com que o *reflection probe* também reflita objetos dinâmicos (ultima coisa e é opcional)
-- [ ] Adicionar uma placa com os nossos nomes e numeros de aluno na cena  
+- [Done] Adicionar uma placa com os nossos nomes e numeros de aluno na cena  
 
 ### Geral
 - [ ] Otimizar a cena  
