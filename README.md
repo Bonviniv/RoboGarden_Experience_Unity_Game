@@ -3,7 +3,7 @@ Projeto da cadeira de PGMV do grupo 6
 
 Updates: https://www.youtube.com/playlist?list=PLyA90E6LMq-4-M9vp_2Kjqof8fvdqNLss  
 
-## Entrega final 13:00 h de 6 de junho de 2025
+## Entrega final 23:59 de 6 de junho de 2025
 
 ## TODO
 
