@@ -8,19 +8,19 @@ Updates: https://www.youtube.com/playlist?list=PLyA90E6LMq-4-M9vp_2Kjqof8fvdqNLs
 ## TODO
 
 ### Plantas
-- [Done] Fazer com que seja possível colocar plantas na bancada
-- [Done] Não permitir que o robo pegue plantas do armario sem estar no interection mode (agora pega atraves do armario)
-- [Done] Limitar a altura das plantas para que não saiam dos módulos ou mudar a escala dos armarios ou dos vasos dependendo da geração feita
-- [Done] Rever a colocação de folhas e flores para que apareçam apenas nos ramos terminais e não haja sobreposição
-- [Done] Rever a colocação de folhas em ramos não terminais, mas flores apenas nos terminais
+- [x] Fazer com que seja possível colocar plantas na bancada
+- [x] Não permitir que o robo pegue plantas do armario sem estar no interection mode (agora pega atraves do armario)
+- [x] Limitar a altura das plantas para que não saiam dos módulos ou mudar a escala dos armarios ou dos vasos dependendo da geração feita
+- [x] Rever a colocação de folhas e flores para que apareçam apenas nos ramos terminais e não haja sobreposição
+- [x] Rever a colocação de folhas em ramos não terminais, mas flores apenas nos terminais
 - [Doing] Adicionar um *slider* para visualizar o crescimento da planta
 - [Doing] Adicionar metodos pra alterar os parametros de crescimento de uma planta a escolha do user (mudar rules, iterações...)
 
 ### Cenário
-- [Done] Adicionar mais sons à cena e ao personagem (associar som ao movimento do robo)
-- [Doing] Regular o volume dos sons da cena e do personagem  
+- [x] Adicionar mais sons à cena e ao personagem (associar som ao movimento do robo)
+- [x] Regular o volume dos sons da cena e do personagem  
 - [ ] Fazer com que o *reflection probe* também reflita objetos dinâmicos (ultima coisa e é opcional)
-- [Done] Adicionar uma placa com os nossos nomes e numeros de aluno na cena  
+- [x] Adicionar uma placa com os nossos nomes e numeros de aluno na cena  
 
 ### Geral
 - [ ] Otimizar a cena  
