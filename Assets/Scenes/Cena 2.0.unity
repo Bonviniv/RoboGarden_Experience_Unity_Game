@@ -8744,8 +8744,10 @@ MonoBehaviour:
   volumeDroppingItemSound: 1
   posteSound: {fileID: 8300000, guid: 254b9bf65b28b1145b72f36b08ce16f4, type: 3}
   volumePosteSound: 1
-  robotStepClip: {fileID: 8300000, guid: dd2af6488d83d014e85b3c90fdc71cae, type: 3}
+  robotStepSound: {fileID: 8300000, guid: dd2af6488d83d014e85b3c90fdc71cae, type: 3}
   volumeSteps: 0.1
+  robotUpAndDownSound: {fileID: 8300000, guid: 69adcb881f0ac9d4891fbe06d7b02e8c, type: 3}
+  volumeRobotUpAndDown: 0.2
   hud: {fileID: 202159042}
   instructionsCanvas: {fileID: 0}
 --- !u!1 &6114980195668737702

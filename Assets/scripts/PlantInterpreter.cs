@@ -385,71 +385,52 @@ public class PlantInterpreter : MonoBehaviour
             currentParent = pivotGO.transform;
         }
     }
-        
-
+    
     void AttachLeavesAndFlowers()
     {
-        if (selectedLeaf == null)
-        {
-            Debug.LogWarning("Prefab de folha não atribuído. Não é possível adicionar folhas.");
-            return;
-        }
-
-        spawnedLeaves.Clear(); 
-        terminalBranchPivots.Clear(); // Limpar lista antes de preencher
+        spawnedLeaves.Clear();
+        terminalBranchPivots.Clear();
 
         foreach (Transform branchPivot in allBranchPivots)
         {
-            bool isTerminalBranch = true;
+            bool isTerminal = true;
+
+            // Verifica se é ramo terminal (sem sub-ramos)
             foreach (Transform child in branchPivot)
             {
-                if (child.name.StartsWith("Pivot_Ramo_")) 
+                if (child.name.StartsWith("Pivot_Ramo_"))
                 {
-                    isTerminalBranch = false;
+                    isTerminal = false;
                     break;
                 }
             }
 
-            if (isTerminalBranch)
-            {
-                Vector3 leafPosition = branchPivot.position + branchPivot.up * length;
-                Quaternion leafRotation = branchPivot.rotation;
+            bool hasLeave = false;
 
-                GameObject leaf = Instantiate(selectedLeaf, leafPosition, leafRotation, branchPivot);
-                leaf.transform.localScale = Vector3.one * 0.025f;
-                spawnedLeaves.Add(leaf); 
-                terminalBranchPivots.Add(branchPivot); // Adiciona este pivot à lista de terminais
+            if (isTerminal == false)
+            {
+                // Ramos intermédios: só folhas opcionais
+                if (selectedLeaf != null && Random.value < 0.3f) // 30% chance
+                {
+                    GameObject leaf = Instantiate(selectedLeaf, branchPivot.position + branchPivot.up * length, branchPivot.rotation, branchPivot);
+                    leaf.transform.localScale = Vector3.one * 0.025f;
+                    spawnedLeaves.Add(leaf);
+                    hasLeave = true;
+                }
+               
+            }
+            else if (isTerminal && hasLeave == false)
+            {
+                 // Se NÃO colocou folha, coloca flor
+                if (selectedFlower != null)
+                {
+                    GameObject flower = Instantiate(selectedFlower, branchPivot.position + branchPivot.up * length, branchPivot.rotation, branchPivot);
+                    flower.transform.localScale = Vector3.one * 0.025f;
+                }
+
+                terminalBranchPivots.Add(branchPivot);
             }
         }
-
-        ConvertLeavesToFlowers();
-    }
-
-    void ConvertLeavesToFlowers()
-    {
-        if (selectedFlower == null || spawnedLeaves.Count == 0) return;
-
-        int leavesToConvert = Mathf.RoundToInt(spawnedLeaves.Count * flowerProbability);
-        
-        List<GameObject> tempLeaves = new List<GameObject>(spawnedLeaves);
-
-        for (int i = 0; i < leavesToConvert; i++)
-        {
-            if (tempLeaves.Count == 0) break;
-
-            int randomIndex = Random.Range(0, tempLeaves.Count);
-            GameObject leafToConvert = tempLeaves[randomIndex];
-
-            if (leafToConvert != null)
-            {
-                GameObject flower = Instantiate(selectedFlower, leafToConvert.transform.position, leafToConvert.transform.rotation, leafToConvert.transform.parent);
-                flower.transform.localScale = Vector3.one * 0.025f;
-
-                Destroy(leafToConvert);
-            }
-            tempLeaves.RemoveAt(randomIndex);
-        }
-        spawnedLeaves.Clear();
     }
 
     // NOVO: Função para aplicar o efeito de vento

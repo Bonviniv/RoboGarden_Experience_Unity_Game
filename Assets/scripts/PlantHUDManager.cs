@@ -149,8 +149,8 @@ public class PlantHUDManager : MonoBehaviour
             currentPlant = null;
 
             // Instanciar novo vaso (sem parent direto)
-            GameObject nova = Instantiate(vaso, pos, rot);
-            nova.transform.SetParent(null); // associar à root da cena
+            GameObject nova = Instantiate(vaso, pos, rot, null);
+            nova.transform.GetChild(0).transform.SetParent(null); // associar à root da cena
 
             // Obter o novo interpretador da planta
             PlantInterpreter novoInterpreter = nova.GetComponentInChildren<PlantInterpreter>();

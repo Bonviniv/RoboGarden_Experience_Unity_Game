@@ -81,8 +81,11 @@ public class PlayerController : MonoBehaviour
     public AudioClip posteSound;
     public float volumePosteSound = 1f;
 
-    public AudioClip robotStepClip;
+    public AudioClip robotStepSound;
     public float volumeSteps = 0.1f;
+
+    public AudioClip robotUpAndDownSound;
+    public float volumeRobotUpAndDown = 0.2f;
 
     [SerializeField] private PlantHUDManager hud;
     [SerializeField] private GameObject instructionsCanvas;
@@ -259,12 +262,20 @@ public class PlayerController : MonoBehaviour
     // NOVO
     public void PlayRobotMovement()
     {
-         if (droppingItemSound != null)
+        if (robotStepSound != null)
         {
-            AudioSource.PlayClipAtPoint(robotStepClip, Camera.main.transform.position, volumeSteps);
+            AudioSource.PlayClipAtPoint(robotStepSound, Camera.main.transform.position, volumeSteps);
         }
     }
 
+    // NOVO
+    public void PlayRobotFloatingMovement()
+    {
+        if (robotUpAndDownSound != null)
+        {
+            AudioSource.PlayClipAtPoint(robotUpAndDownSound, Camera.main.transform.position, volumeRobotUpAndDown);
+        }
+    }
 
     void MoveArms()
     {
@@ -357,6 +368,15 @@ public class PlayerController : MonoBehaviour
 
             // Ativa som do movimento do robo
             PlayRobotMovement();
+        }
+        else
+        {
+            if (!inOrOutHUB)
+            {
+                // Ativa som do movimento de flutuar do robo quando está parado
+                PlayRobotFloatingMovement();
+            }
+           
         }
     }
 
@@ -773,6 +793,8 @@ public class PlayerController : MonoBehaviour
     /// Permite ao jogador interagir com postes de luz. Pressionar 'P' alterna a luz ligada/desligada.
     void HandlePosteInteraction()
     {
+        if (inOrOutHUB) return;
+
         if (Input.GetMouseButtonDown(0))
         {
             GameObject[] postes = GameObject.FindGameObjectsWithTag("poste");
