@@ -29,10 +29,10 @@ public class InterectionMode : MonoBehaviour
     public float volumeInteractionModeSound = 1f;   
 
     public AudioClip openAndCloseGavetaSound;      
-    public float volumeOpenAndCloseGavetaSound = 1f; 
+    public float volumeOpenAndCloseGavetaSound = 0.5f; 
 
     public AudioClip openAndCloseCubiculoSound;      
-    public float volumeOpenAndCloseCubiculoSound = 1f; 
+    public float volumeOpenAndCloseCubiculoSound = 0.5f;
 
     private float lastInteractionTime = 0f;
     public float interactionCooldown = 1f; // Adjust as needed, e.g., 1 seconds
@@ -193,10 +193,10 @@ public class InterectionMode : MonoBehaviour
         {
 
              if (Cursor.lockState == CursorLockMode.Locked)
-        {
-             Cursor.lockState = CursorLockMode.None;
-          // Lógica para quando o cursor está bloqueado
-        }
+            {
+                Cursor.lockState = CursorLockMode.None;
+                // Lógica para quando o cursor está bloqueado
+            }   
             Debug.Log("Mouse clicked in interaction mode (Right Click)");
             Ray ray = camera.GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;

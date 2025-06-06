@@ -63,10 +63,10 @@ public class ArmarioGenerator : MonoBehaviour
     private bool debugDoors = true;
 
     public AudioClip openDoorSound;
-    public float volumeOpenDoorSound = 1f;
+    public float volumeOpenDoorSound = 0.5f;
 
     public AudioClip closeDoorSound;
-    public float volumeCloseDoorSound = 1f;
+    public float volumeCloseDoorSound = 0.5f;
 
 
     private void Start()

@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq; 
+using System.Linq;
+using Unity.VisualScripting;
 
 // Controla o jogador (Marvin), incluindo movimento, interação e física
 // Gerencia pegar/soltar plantas e interagir com os postes de luz
+
 public class PlayerController : MonoBehaviour
 {
     // Velocidade de movimento do jogador (não exceder 10 para evitar problemas de colisão)
@@ -22,6 +24,10 @@ public class PlayerController : MonoBehaviour
 
     // Altura vertical do personagem em relação ao terreno
     public float heightOffset = 3.11f;
+
+    // Planta na mesa
+    public bool plantOnTable = false;
+    public GameObject plantaNaMesa = null;
 
     [SerializeField] private Transform armacaoMarvin; // Referência à parte giratória do personagem
 
@@ -41,7 +47,6 @@ public class PlayerController : MonoBehaviour
     // Add these with other private variables at the top
     private bool isIdleAnimationPlaying = true;
 
-
     private bool isLeftArmRaised = false;
     private bool isRightArmRaised = false;
 
@@ -60,15 +65,33 @@ public class PlayerController : MonoBehaviour
 
     private Dictionary<Light, (Color, float)> posteOriginalSettings = new Dictionary<Light, (Color, float)>(); // Guarda a intensidade e cor original das luzes dos postes
 
+    public GameObject canvasHUD; // referência ao teu CanvasInteracaoPlanta 
+    public GameObject mainCamera;
+    public GameObject hudCamera;
 
+    public bool inOrOutHUB = false;
+
+    // Game Sounds
     public AudioClip pickSound;     // Sound to play when picking up objects
     public float volumePickSound = 1f;   // Volume for the pick sound (0.0f to 1.0f)
+
+    public AudioClip droppingItemSound;
+    public float volumeDroppingItemSound = 1f; 
 
     public AudioClip posteSound;
     public float volumePosteSound = 1f;
 
+    public AudioClip robotStepClip;
+    public float volumeSteps = 0.1f;
 
+    [SerializeField] private PlantHUDManager hud;
+    [SerializeField] private GameObject instructionsCanvas;
 
+    public bool getPlantOnTable()
+    {
+        return plantOnTable;
+    }
+    
     void Start()
     {
         startPosition = transform.position;
@@ -145,8 +168,31 @@ public class PlayerController : MonoBehaviour
         HandlePickDrop(groundHeight);
 
         //CheckWaitingAnimation(); // Add this line
+
+        // Lida com a interação com HUD da planta
+        HandleHUDInteraction();
     }
 
+    public void ToggleHUDControl(bool hudAtivo)
+    {
+        if (hudAtivo)
+        {
+            hudCamera.SetActive(hudAtivo);
+            mainCamera.SetActive(!hudAtivo);
+        }
+        else
+        {
+            hudCamera.SetActive(hudAtivo);
+            mainCamera.SetActive(!hudAtivo);
+        }
+
+        // Bloqueia/ativa o cursor
+        Cursor.visible = hudAtivo;
+        Cursor.lockState = hudAtivo ? CursorLockMode.None : CursorLockMode.Locked;
+
+        // Bloqueia também o movimento do jogador se quiseres
+        moveSpeed = hudAtivo ? 0f : 7f;
+    }
 
     // Add this function after MoveArms()
     void CheckWaitingAnimation()
@@ -198,6 +244,24 @@ public class PlayerController : MonoBehaviour
         if (posteSound != null)
         {
             AudioSource.PlayClipAtPoint(posteSound, Camera.main.transform.position, volumePosteSound);
+        }
+    }
+
+    // NOVO 
+    public void PlayDroppingItemSound()
+    {
+        if (droppingItemSound != null)
+        {
+            AudioSource.PlayClipAtPoint(droppingItemSound, Camera.main.transform.position, volumeDroppingItemSound);
+        }
+    }
+
+    // NOVO
+    public void PlayRobotMovement()
+    {
+         if (droppingItemSound != null)
+        {
+            AudioSource.PlayClipAtPoint(robotStepClip, Camera.main.transform.position, volumeSteps);
         }
     }
 
@@ -290,6 +354,9 @@ public class PlayerController : MonoBehaviour
             // Rotaciona o jogador suavemente na direção do movimento
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection) * Quaternion.Euler(0, 90, 0);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+
+            // Ativa som do movimento do robo
+            PlayRobotMovement();
         }
     }
 
@@ -407,6 +474,7 @@ public class PlayerController : MonoBehaviour
         }
         return 0f; // Altura padrão se não encontrar o chão
     }
+
     // Em PlayerController.cs
     public void ForcePickUp(GameObject plantToPickUp)
     {
@@ -441,6 +509,7 @@ public class PlayerController : MonoBehaviour
         currentVaso = plantToPickUp;
         carrying = true;
         canPick = false;
+        plantOnTable = false;
 
         Debug.Log($"Forced pickup: {plantToPickUp.name} is now carried.");
 
@@ -511,6 +580,8 @@ public class PlayerController : MonoBehaviour
                 Debug.Log($"Renderers re-enabled for {currentVaso.name} (the picked plant).");
 
                 carrying = true;
+                plantOnTable = false;
+                ToggleHUDControl(false);
                 Debug.Log("Trigger 'pick' ativado. carrying = true");
                 currentPlanta = currentVaso; // currentPlanta é o GameObject "Vaso"
             }
@@ -528,40 +599,156 @@ public class PlayerController : MonoBehaviour
         {
             if (carrying && currentPlanta != null)
             {
+                GameObject mesa = FindNearbyTable(); // NOVO: verifica se há uma mesa por perto
+
+                PlayDroppingItemSound();
                 animator.SetTrigger("drop"); // Dispara a animação
 
-                // currentPlanta AGORA É SEMPRE O GameObject "Vaso" (o que tem o Rigidbody e Collider)
                 Rigidbody rb = currentPlanta.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
                     rb.isKinematic = false;
                     rb.useGravity = true;
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
                     Debug.Log("Rigidbody set to non-kinematic and gravity enabled for dropped vaso.");
                 }
                 else
                 {
                     Debug.LogWarning("No Rigidbody found on currentPlanta! Cannot drop correctly.");
-                    return; // Retorna para evitar erros se não há RB
+                    return;
                 }
 
-                // Desparentar e posicionar o GameObject "Vaso" (currentPlanta)
-                currentPlanta.transform.SetParent(null);
-                currentPlanta.transform.position = new Vector3(transform.position.x, groundHeight + 0.05f, transform.position.z);
-                currentPlanta.transform.rotation = Quaternion.identity;
+                // --- Se houver mesa, pousar a planta em cima ---
+                if (mesa != null)
+                {
+                    plantOnTable = true;
+                    plantaNaMesa = currentPlanta; 
 
-                //EnableAllRenderers(currentPlanta); 
-                Debug.Log($"Renderers re-enabled for {currentPlanta.name} (the dropped plant).");
+                    Collider mesaCollider = mesa.GetComponent<Collider>();
+                    Vector3 mesaTop = mesa.transform.position;
 
+                    if (mesaCollider != null)
+                    {
+                        // Ponto mais próximo do robô na bounding box da mesa
+                        Vector3 closestPoint = mesaCollider.ClosestPoint(transform.position);
+
+                        // Ajusta a altura para pousar em cima da mesa
+                        float alturaMesa = mesaCollider.bounds.max.y + 0.02f;
+
+                        Vector3 directionFromMesa = (closestPoint - transform.position).normalized;
+                        Vector3 dropPos = new Vector3(closestPoint.x, alturaMesa, closestPoint.z) - directionFromMesa * (-1.2f);
+
+                        currentPlanta.transform.SetParent(null);
+                        currentPlanta.transform.position = dropPos;
+                        currentPlanta.transform.rotation = Quaternion.identity;
+
+                        Debug.Log($"Planta pousada em cima da mesa no ponto mais próximo: {dropPos}");
+                    }
+                    else
+                    {
+                        // Fallback se não tiver collider
+                        Vector3 dropPos = mesa.transform.position + new Vector3(0, 0.8f, 0);
+                        currentPlanta.transform.SetParent(null);
+                        currentPlanta.transform.position = dropPos;
+                        currentPlanta.transform.rotation = Quaternion.identity;
+
+                        Debug.Log("Planta pousada na posição genérica da mesa (sem collider).");
+                    }
+                }
+                // --- Caso contrário, pousa no chão normalmente ---
+                else
+                {
+                    plantOnTable = false;
+                    currentPlanta.transform.SetParent(null);
+                    currentPlanta.transform.position = new Vector3(transform.position.x, groundHeight + 0.05f, transform.position.z);
+                    currentPlanta.transform.rotation = Quaternion.identity;
+
+                    Debug.Log("Planta largada no chão.");
+                }
+                
                 carrying = false;
                 Debug.Log("Trigger 'drop' ativado. carrying = false.");
 
                 currentPlanta = null;
-                currentVaso = null; // Zera a referência para ser redescoberta
+                currentVaso = null;
 
-                UpdateVasosCache(); // Atualiza o cache para re-detectar o vaso no chão
+                UpdateVasosCache();
                 Debug.Log("Vasos cache updated after dropping plant.");
             }
         }
+    }
+
+    public void HandleHUDInteraction()
+    {
+        if (Input.GetKeyDown(KeyCode.C) && inOrOutHUB == false)
+        {
+            Debug.Log("Tecla C premida.");
+            if (plantOnTable && plantaNaMesa != null)
+            {
+                Debug.Log("Detetei planta em cima da mesa.");
+                var ligacao = plantaNaMesa.GetComponent<PlantConnectionHUD>();
+                var pi = ligacao != null ? ligacao.interpreterSource : null;
+
+                if (pi != null && hud != null)
+                {
+                    Debug.Log("Caraca velho");
+                    if (hud.gameObject.activeSelf)
+                    {
+                        hud.HideHUD(); // Oculta se já estiver visível
+                    }
+                    else
+                    {
+                        hud.SetCurrentPlant(pi); // Mostra e liga a planta
+                        ToggleHUDControl(true);
+                        inOrOutHUB = true;
+                        // Cursor.lockState = CursorLockMode.None;
+                        // Cursor.visible = true;
+                    }
+                }
+                else if (ligacao == null)
+                {
+                    Debug.Log("variável ligação");
+                }
+                else if (pi == null)
+                {
+                    Debug.Log("variável pi");
+                }
+                else if (hud == null)
+                {
+                    Debug.Log("variável hud");
+                }
+            }
+            else if (!plantOnTable)
+            {
+                Debug.Log("Bool com erro");
+            }
+            else if (plantaNaMesa == null)
+            {
+                Debug.Log("Planta Objeto com erro");
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.C) && inOrOutHUB == true)
+        {
+            Debug.Log("Entrei no if para fechar HUD");
+            ToggleHUDControl(false);
+            canvasHUD.SetActive(false);
+            inOrOutHUB = false;
+        }
+
+    }
+
+    private GameObject FindNearbyTable()
+    {
+        Collider[] nearby = Physics.OverlapSphere(transform.position, 1.5f);
+        foreach (Collider c in nearby)
+        {
+            if (c.CompareTag("mesa"))
+            {
+                return c.gameObject;
+            }
+        }
+        return null;
     }
 
     // Helper method for finding a child by name, if GetChild(0) is not reliable.

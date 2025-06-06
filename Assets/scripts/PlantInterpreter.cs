@@ -35,6 +35,7 @@ public class PlantInterpreter : MonoBehaviour
     public float length = 0.5f;
     [Tooltip("Angle for turns (+, -, &, ^, <, >)")]
     public float angle = 22.5f;
+    public bool isWindOn = true;
 
     [Header("Stochastic L-System Rule Sets")]
     public List<RuleSet> allRuleSets = new List<RuleSet>();
@@ -45,6 +46,16 @@ public class PlantInterpreter : MonoBehaviour
     public GameObject[] flowerPrefabs;
     [Range(0f, 1f)]
     public float flowerProbability = 0.3f;
+
+    [Header("Plant Max Height")]
+    public float plantMaxHeight = 0f; // Altura máxima permitida para a planta
+
+    [Header("Growing Limit")]
+    public float limit = 1.2f;
+
+    [Header("Wind Amplification")]
+    [Tooltip("Fator de amplificação recursiva da rotação do vento por nível da árvore.")]
+    public float windRotationAmplification = 1.333f;
 
     // Estado interno da "tartaruga" e da geração
     public Vector3 currentPosition;
@@ -165,7 +176,7 @@ public class PlantInterpreter : MonoBehaviour
         };
     }
 
-    void Start()
+    public void Start()
     {
         if (potPrefab == null)
         {
@@ -197,8 +208,16 @@ public class PlantInterpreter : MonoBehaviour
 
         GameObject potInstance = Instantiate(potPrefab, transform.position, transform.rotation);
         potInstance.transform.SetParent(this.transform); 
+
+        // LIGA A PLANTA AO INTERPRETER
+        PlantConnectionHUD ligacao = potInstance.AddComponent<PlantConnectionHUD>();
+        ligacao.interpreterSource = this;
+
         potInstance.tag = "vaso";
-        potInstance.name = "Vaso"; 
+        potInstance.name = "Vaso";
+
+        // NOVO: limite seja sempre 1 metro acima do topo do vaso automaticamente
+        plantMaxHeight = potInstance.transform.position.y + limit;
 
         currentParent = potInstance.transform; 
         currentPosition = potInstance.transform.position + potInstance.transform.up * 0.1f;
@@ -232,7 +251,7 @@ public class PlantInterpreter : MonoBehaviour
     }
 
     void Update()
-    {
+    {   
         ApplyWindEffect();
     }
 
@@ -334,33 +353,39 @@ public class PlantInterpreter : MonoBehaviour
 
     void GrowBranch()
     {
-        GameObject pivotGO = new GameObject($"Pivot_Ramo_{branchIdCounter}");
-        pivotGO.transform.SetParent(currentParent);
-        pivotGO.transform.position = currentPosition;
-        pivotGO.transform.rotation = currentRotation;
+        if (currentPosition.y >= plantMaxHeight) {
+            return;
 
-        GameObject branchGO = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        branchGO.name = $"Ramo_{branchIdCounter}";
-        branchIdCounter++;
+        } else {
+            GameObject pivotGO = new GameObject($"Pivot_Ramo_{branchIdCounter}");
+            pivotGO.transform.SetParent(currentParent);
+            pivotGO.transform.position = currentPosition;
+            pivotGO.transform.rotation = currentRotation;
 
-        Renderer renderer = branchGO.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            renderer.material.color = new Color(0.55f, 0.27f, 0.07f);
+            GameObject branchGO = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            branchGO.name = $"Ramo_{branchIdCounter}";
+            branchIdCounter++;
+
+            Renderer renderer = branchGO.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.material.color = new Color(0.55f, 0.27f, 0.07f);
+            }
+            Collider col = branchGO.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+
+            branchGO.transform.SetParent(pivotGO.transform);
+            branchGO.transform.localPosition = new Vector3(0, length / 2f, 0);
+            branchGO.transform.localRotation = Quaternion.identity;
+            branchGO.transform.localScale = new Vector3(0.05f, length / 2f, 0.05f);
+
+            allBranchPivots.Add(pivotGO.transform);
+
+            currentPosition += pivotGO.transform.up * length;
+            currentParent = pivotGO.transform;
         }
-        Collider col = branchGO.GetComponent<Collider>();
-        if (col != null) Destroy(col);
-
-        branchGO.transform.SetParent(pivotGO.transform);
-        branchGO.transform.localPosition = new Vector3(0, length / 2f, 0);
-        branchGO.transform.localRotation = Quaternion.identity;
-        branchGO.transform.localScale = new Vector3(0.05f, length / 2f, 0.05f);
-
-        allBranchPivots.Add(pivotGO.transform);
-
-        currentPosition += pivotGO.transform.up * length;
-        currentParent = pivotGO.transform;
     }
+        
 
     void AttachLeavesAndFlowers()
     {
@@ -432,40 +457,45 @@ public class PlantInterpreter : MonoBehaviour
     {
         if (mainTrunkPivot == null) return; // Não há tronco para balançar
 
-        // Balanço do tronco principal (Global Sway)
-        // Usa um seno para um movimento suave e repetitivo.
-        // Multiplica por Time.time para movimento contínuo.
-        // Multiplica por windSpeed para controlar a frequência.
-        // Multiplica por windStrength para controlar a amplitude.
-        // Usa windDirection para definir a direção do balanço.
-        float sway = Mathf.Sin(Time.time * windSpeed) * windStrength;
-        
-        // Aplica a rotação ao tronco. Rotate(angle, axis, Space.World/Self)
-        // Usamos Space.Self para que a rotação seja local ao tronco.
-        // Para balançar para os lados, rotacionamos em torno do eixo X ou Z local.
-        // Vamos usar o eixo X local para inclinar para frente/trás e o Z para os lados.
-        // Uma mistura da direção do vento é mais interessante.
-        Quaternion targetSwayRotation = Quaternion.Euler(windDirection.x * sway, 0, windDirection.z * sway);
-        
-        // Aplica a rotação ao tronco principal (sempre adicionando à rotação inicial do tronco)
-        // Ou, uma rotação que se aplica em torno da posição do vaso.
-        // Para balançar o tronco inteiro a partir da base:
-        mainTrunkPivot.localRotation = Quaternion.Lerp(mainTrunkPivot.localRotation, Quaternion.identity * targetSwayRotation, Time.deltaTime * 5f); // Smooth out the rotation
-
-        // Farfalhar dos ramos terminais (Local Flutter)
-        foreach (Transform terminalPivot in terminalBranchPivots)
+        // Se o vento for desativado no Canvas
+        if (isWindOn)
         {
-            if (terminalPivot == null) continue; // Pode ser que um pivot foi destruído se a planta foi limpa no meio do jogo.
+            // Balanço do tronco principal (Global Sway)
+            // Usa um seno para um movimento suave e repetitivo.
+            // Multiplica por Time.time para movimento contínuo.
+            // Multiplica por windSpeed para controlar a frequência.
+            // Multiplica por windStrength para controlar a amplitude.
+            // Usa windDirection para definir a direção do balanço.
+            float sway = Mathf.Sin(Time.time * windSpeed) * windStrength;
 
-            // Aplica um balanço menor e mais rápido aos ramos terminais
-            float flutter = Mathf.Sin(Time.time * leafFlutterSpeed + terminalPivot.GetInstanceID()) * leafFlutterStrength; // + InstanceID para variação
-            // Balança os ramos terminais em torno do seu próprio eixo, para um efeito de folhagem.
-            // Aqui, podemos usar o eixo Y local para um balanço "folhoso" ou Z para um balanço lateral.
-            Quaternion targetFlutterRotation = Quaternion.Euler(0, flutter, 0); // Balança em Y local para simular o farfalhar
+            // Aplica a rotação ao tronco. Rotate(angle, axis, Space.World/Self)
+            // Usamos Space.Self para que a rotação seja local ao tronco.
+            // Para balançar para os lados, rotacionamos em torno do eixo X ou Z local.
+            // Vamos usar o eixo X local para inclinar para frente/trás e o Z para os lados.
+            // Uma mistura da direção do vento é mais interessante.
+            Quaternion targetSwayRotation = Quaternion.Euler(windDirection.x * sway, 0, windDirection.z * sway);
 
-            terminalPivot.localRotation = Quaternion.Lerp(terminalPivot.localRotation, Quaternion.identity * targetFlutterRotation, Time.deltaTime * 10f); // Mais rápido
+            // Aplica a rotação ao tronco principal (sempre adicionando à rotação inicial do tronco)
+            // Ou, uma rotação que se aplica em torno da posição do vaso.
+            // Para balançar o tronco inteiro a partir da base:
+            mainTrunkPivot.localRotation = Quaternion.Lerp(mainTrunkPivot.localRotation, Quaternion.identity * targetSwayRotation, Time.deltaTime * 5f); // Smooth out the rotation
+
+            // Farfalhar dos ramos terminais (Local Flutter)
+            foreach (Transform terminalPivot in terminalBranchPivots)
+            {
+                if (terminalPivot == null) continue; // Pode ser que um pivot foi destruído se a planta foi limpa no meio do jogo.
+
+                // Aplica um balanço menor e mais rápido aos ramos terminais
+                float flutter = Mathf.Sin(Time.time * leafFlutterSpeed + terminalPivot.GetInstanceID()) * leafFlutterStrength; // + InstanceID para variação
+                // Balança os ramos terminais em torno do seu próprio eixo, para um efeito de folhagem.
+                // Aqui, podemos usar o eixo Y local para um balanço "folhoso" ou Z para um balanço lateral.
+                Quaternion targetFlutterRotation = Quaternion.Euler(0, flutter, 0); // Balança em Y local para simular o farfalhar
+
+                terminalPivot.localRotation = Quaternion.Lerp(terminalPivot.localRotation, Quaternion.identity * targetFlutterRotation, Time.deltaTime * 10f); // Mais rápido
+            }
         }
     }
+
 
     public void ClearGeneratedPlant()
     {

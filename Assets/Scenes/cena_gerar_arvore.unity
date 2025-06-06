@@ -301,9 +301,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   potPrefab: {fileID: 192902041173792156, guid: 989b02a4dc8b37243a2db8e535d79ef2, type: 3}
   initialAxiom: F
-  iterations: 2
+  iterations: 5
   length: 0.45
   angle: 50
+  isWindOn: 1
   allRuleSets: []
   selectedRuleSet:
     name: 
@@ -319,6 +320,9 @@ MonoBehaviour:
   - {fileID: 8762735636086577548, guid: f0bb16ed4e7913942898dc65250b7ef8, type: 3}
   - {fileID: 8328179613064906137, guid: 38e7cf6f7d94ba34498cdbdf3c3d9140, type: 3}
   flowerProbability: 0.3
+  plantMaxHeight: 0
+  limit: 1.2
+  windRotationAmplification: 1.333
   currentPosition: {x: 0, y: 0, z: 0}
   currentRotation: {x: 0, y: 0, z: 0, w: 0}
   currentParent: {fileID: 0}
@@ -392,9 +396,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   potPrefab: {fileID: 192902041173792156, guid: 989b02a4dc8b37243a2db8e535d79ef2, type: 3}
   initialAxiom: F
-  iterations: 2
+  iterations: 5
   length: 0.45
   angle: 50
+  isWindOn: 1
   allRuleSets: []
   selectedRuleSet:
     name: 
@@ -410,6 +415,9 @@ MonoBehaviour:
   - {fileID: 8762735636086577548, guid: f0bb16ed4e7913942898dc65250b7ef8, type: 3}
   - {fileID: 8328179613064906137, guid: 38e7cf6f7d94ba34498cdbdf3c3d9140, type: 3}
   flowerProbability: 0.3
+  plantMaxHeight: 0
+  limit: 1.2
+  windRotationAmplification: 1.333
   currentPosition: {x: 0, y: 0, z: 0}
   currentRotation: {x: 0, y: 0, z: 0, w: 0}
   currentParent: {fileID: 0}
@@ -604,9 +612,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   potPrefab: {fileID: 192902041173792156, guid: 989b02a4dc8b37243a2db8e535d79ef2, type: 3}
   initialAxiom: F
-  iterations: 2
+  iterations: 5
   length: 0.45
   angle: 50
+  isWindOn: 1
   allRuleSets: []
   selectedRuleSet:
     name: 
@@ -622,6 +631,9 @@ MonoBehaviour:
   - {fileID: 8762735636086577548, guid: f0bb16ed4e7913942898dc65250b7ef8, type: 3}
   - {fileID: 8328179613064906137, guid: 38e7cf6f7d94ba34498cdbdf3c3d9140, type: 3}
   flowerProbability: 0.3
+  plantMaxHeight: 0
+  limit: 1.2
+  windRotationAmplification: 1.333
   currentPosition: {x: 0, y: 0, z: 0}
   currentRotation: {x: 0, y: 0, z: 0, w: 0}
   currentParent: {fileID: 0}
@@ -695,9 +707,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   potPrefab: {fileID: 192902041173792156, guid: 989b02a4dc8b37243a2db8e535d79ef2, type: 3}
   initialAxiom: F
-  iterations: 2
+  iterations: 5
   length: 0.45
   angle: 50
+  isWindOn: 1
   allRuleSets: []
   selectedRuleSet:
     name: 
@@ -713,6 +726,9 @@ MonoBehaviour:
   - {fileID: 8762735636086577548, guid: f0bb16ed4e7913942898dc65250b7ef8, type: 3}
   - {fileID: 8328179613064906137, guid: 38e7cf6f7d94ba34498cdbdf3c3d9140, type: 3}
   flowerProbability: 0.3
+  plantMaxHeight: 0
+  limit: 1.2
+  windRotationAmplification: 1.333
   currentPosition: {x: 0, y: 0, z: 0}
   currentRotation: {x: 0, y: 0, z: 0, w: 0}
   currentParent: {fileID: 0}
@@ -786,9 +802,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   potPrefab: {fileID: 192902041173792156, guid: 989b02a4dc8b37243a2db8e535d79ef2, type: 3}
   initialAxiom: F
-  iterations: 2
+  iterations: 5
   length: 0.45
   angle: 50
+  isWindOn: 1
   allRuleSets: []
   selectedRuleSet:
     name: 
@@ -804,6 +821,9 @@ MonoBehaviour:
   - {fileID: 8762735636086577548, guid: f0bb16ed4e7913942898dc65250b7ef8, type: 3}
   - {fileID: 8328179613064906137, guid: 38e7cf6f7d94ba34498cdbdf3c3d9140, type: 3}
   flowerProbability: 0.3
+  plantMaxHeight: 0
+  limit: 1.2
+  windRotationAmplification: 1.333
   currentPosition: {x: 0, y: 0, z: 0}
   currentRotation: {x: 0, y: 0, z: 0, w: 0}
   currentParent: {fileID: 0}
@@ -840,6 +860,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 410795918774253121, guid: da6f973a93d10aa468280ff1de567a3f, type: 3}
+      propertyPath: iterations
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 5695227824962176963, guid: da6f973a93d10aa468280ff1de567a3f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
